@@ -40,7 +40,7 @@ public class RedisConfig{
         // 返回 Redis 缓存管理器
         return RedisCacheManager.builder(factory)
                 .cacheDefaults(cacheConfig).build();
-                //.withCacheConfiguration("user", cacheConfig).build();
+                  //.withCacheConfiguration("user", cacheConfig).build();
     }
 
     /**
