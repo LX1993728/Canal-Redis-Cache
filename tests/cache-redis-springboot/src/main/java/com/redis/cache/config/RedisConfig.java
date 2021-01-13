@@ -1,7 +1,5 @@
 package com.redis.cache.config;
 
-import cn.hutool.crypto.digest.DigestUtil;
-import cn.hutool.json.JSONUtil;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.interceptor.KeyGenerator;
@@ -11,19 +9,20 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.Arrays;
 
 /**
  * 实现Redis+Spring Cache的配置
  */
 @Configuration
 public class RedisConfig extends CachingConfigurerSupport {
+
+    // ========================== Redis Cache相关的配置 =============================
 
     /**
      * 配置缓存管理器
@@ -79,6 +78,30 @@ public class RedisConfig extends CachingConfigurerSupport {
        return new CacheKeyGenerator();
     }
 
+    // ========================== Redis Template相关的配置 =============================
+    /**
+     * retemplate相关配置
+     * @param factory
+     * @return
+     */
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
 
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        // 配置连接工厂
+        template.setConnectionFactory(factory);
+
+        // 值采用json序列化
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        //使用StringRedisSerializer来序列化和反序列化redis的key值
+        template.setKeySerializer(new StringRedisSerializer());
+
+        // 设置hash key 和value序列化模式
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.afterPropertiesSet();
+
+        return template;
+    }
 
 }
