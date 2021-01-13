@@ -12,11 +12,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@CacheConfig(cacheNames = "Test",keyGenerator = "redisKeyGenerator")
 @RestController
 public class TestController {
     @GetMapping("/test1")
-    @Cacheable(value = "Test", key = "#id", keyGenerator = "redisKeyGenerator")
+    @Cacheable(cacheNames = {"AAA", "BBB"})
     public Map<String, Object> testMap(@RequestParam("id")Long id){
         String name = "zhansgan" + id;
         Map<String, Object> resultMap = new HashMap<>();

@@ -1,6 +1,9 @@
 package com.redis.cache.config;
 
+import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.json.JSONUtil;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,9 +17,13 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.Arrays;
 
+/**
+ * 实现Redis+Spring Cache的配置
+ */
 @Configuration
-public class RedisConfig{
+public class RedisConfig extends CachingConfigurerSupport {
 
     /**
      * 配置缓存管理器
@@ -30,7 +37,8 @@ public class RedisConfig{
                 // 设置过期时间 10 分钟
                 .entryTtl(Duration.ofMinutes(10))
                 // 设置缓存前缀
-                // .prefixKeysWith("cache:user:")
+                // .prefixKeysWith("cache:")
+                .disableKeyPrefix()
                 // 禁止缓存 null 值
                 .disableCachingNullValues()
                 // 设置 key 序列化
@@ -60,15 +68,16 @@ public class RedisConfig{
     }
 
     /**
-     * 生产key的策略
-     *
+     * 重写生产key的策略
+     * @apiNote 注意: 只适用于@Cacheable注解
      * @return
      */
-//    @Bean
-//    @Primary
-//    public KeyGenerator keyGenerator() {
-//        return new RedisKeyGenerator();
-//    }
+    @Bean
+    @Override
+    @Primary
+    public KeyGenerator keyGenerator() {
+       return new CacheKeyGenerator();
+    }
 
 
 
