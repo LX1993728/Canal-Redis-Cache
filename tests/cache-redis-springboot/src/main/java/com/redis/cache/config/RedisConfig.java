@@ -1,5 +1,10 @@
 package com.redis.cache.config;
 
+import com.redis.cache.constants.CacheKeyProperties;
+import com.redis.cache.service.PersonalCacheService;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.interceptor.KeyGenerator;
@@ -13,14 +18,24 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Duration;
 
 /**
  * 实现Redis+Spring Cache的配置
  */
+@Component
+@EnableConfigurationProperties(value = {CacheKeyProperties.class})
 @Configuration
 public class RedisConfig extends CachingConfigurerSupport {
+
+    @Autowired
+    private CacheKeyProperties cacheKeyProperties;
+
+    @Autowired
+    WebApplicationContext webApplicationContext;
 
     // ========================== Redis Cache相关的配置 =============================
 
@@ -75,7 +90,13 @@ public class RedisConfig extends CachingConfigurerSupport {
     @Override
     @Primary
     public KeyGenerator keyGenerator() {
-       return new CacheKeyGenerator();
+        PersonalCacheService pService = null;
+        try {
+           pService =  webApplicationContext.getBean(PersonalCacheService.class);
+        }catch (Exception e){
+            throw new NoSuchBeanDefinitionException("请实现PersonalCacheService接口...");
+        }
+        return new CacheKeyGenerator(cacheKeyProperties, pService);
     }
 
     // ========================== Redis Template相关的配置 =============================
