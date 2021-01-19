@@ -44,6 +44,17 @@ public class TestController {
     }
 
     @GetMapping("/test3")
+    @ControlCache(tables = {"t_user","t_book"})
+    public Map<String, Object> testMap3(@RequestParam("id")Long id){
+        String name = "wangwu" + id;
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("id", id);
+        resultMap.put("name", name);
+        log.info("---- id={} ----", id);
+        return  resultMap;
+    }
+
+    @GetMapping("/test4")
     public Object testRedis(){
 //        redisTemplate.keys()
         return null;

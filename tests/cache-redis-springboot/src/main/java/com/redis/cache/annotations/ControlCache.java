@@ -9,8 +9,8 @@ import java.lang.annotation.*;
  * 用于标注在控制器方法上的缓存注解
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-@Cacheable(cacheNames={"Controller", "Service"})
+@Target({ElementType.METHOD})
+@Cacheable(cacheNames={"Controller"})
 public  @interface ControlCache {
     /**
      * 对应数据库的名称，若不设置则以全局配置{cache.properties中内容为准}
