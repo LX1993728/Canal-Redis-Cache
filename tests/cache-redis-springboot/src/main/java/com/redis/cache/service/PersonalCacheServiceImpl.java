@@ -6,6 +6,6 @@ import org.springframework.stereotype.Service;
 public class PersonalCacheServiceImpl implements PersonalCacheService{
     @Override
     public String getPersonalUserId() {
-        return "userId1111";
+        return "userId1";
     }
 }

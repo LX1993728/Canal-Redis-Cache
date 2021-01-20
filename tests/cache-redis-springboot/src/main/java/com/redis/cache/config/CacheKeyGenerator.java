@@ -20,8 +20,9 @@ import java.util.Map;
 
 /**
  * key的规则如下：
- * ① service类型缓存: Cache:${DbName}:[tab1,tab2 ...]:用户标识/NULL:类名.方法名:MD5(参数数组的Json字符串)
- * ① Controller类型缓存: Cache:${DbName}:[tab1,tab2 ...]:用户标识/NULL:类名.方法名:MD5(request.getParameterMap对应的Json字符串)
+ *
+ * ① service类型缓存: Cache:DB=${DbName}:TS=[tab1,tab2 ...]:UID=用户标识/NULL:M=类名.方法名:MD5(参数数组的Json字符串)
+ * ① Controller类型缓存: Cache:DB=${DbName}:TS=[tab1,tab2 ...]:UID=用户标识/NULL:M=类名.方法名:MD5(request.getParameterMap对应的Json字符串)
  */
 
 @Slf4j
@@ -89,13 +90,13 @@ public class CacheKeyGenerator implements KeyGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append(cacheKeyProperties.getPrefix()) // 缓存前缀
                 .append(delimit)
-                .append(dbNameStr) // dbName
+                .append("DB=").append(dbNameStr) // dbName
                 .append(delimit)
-                .append(tablesStr) // 表标识
+                .append("TS=").append(tablesStr) // 表标识
                 .append(delimit)
-                .append(personalStr) // 用户标识
+                .append("UID=").append(personalStr) // 用户标识
                 .append(delimit)
-                .append(target.getClass().getName())
+                .append("M=").append(target.getClass().getName())
                 .append(method.getName())
                 .append(delimit)
                 .append(paramStr);
@@ -105,14 +106,14 @@ public class CacheKeyGenerator implements KeyGenerator {
 
     private String getDBNameStr(String annotationDBName){
         if (!StringUtils.isEmpty(annotationDBName)){
-            return annotationDBName;
+            return annotationDBName.toUpperCase();
         }
 
         if (!StringUtils.isEmpty(personalCacheService.getDBName())){
-            return personalCacheService.getDBName();
+            return personalCacheService.getDBName().toUpperCase();
         }
 
-        return cacheKeyProperties.getDbname();
+        return cacheKeyProperties.getDbname().toUpperCase();
     }
 
     private  String getTablesStr(String[] tables){
