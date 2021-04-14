@@ -1,6 +1,3 @@
-/tests/cache-redis-springboot/target/
-/tests/cache-redis-test/target/
-/tests/canal-java-test/target/classes/com/canal/test/
 /.idea/
-/starters/spring-boot-starter-canal/canal-test/target/
-/starters/spring-boot-starter-canal/starter-canal/target/classes/
+/**/target
+/**/*.iml
