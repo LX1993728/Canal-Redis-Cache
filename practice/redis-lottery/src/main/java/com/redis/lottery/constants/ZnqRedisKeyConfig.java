@@ -21,26 +21,11 @@ public class ZnqRedisKeyConfig {
     @Getter
     private static final long EXPIRE_TIME = TimeUnit.DAYS.toSeconds(1) + 10;
 
-    // 周年庆活动的 时间段的key  KV 结构
-    @Getter
-    private static final String PERIOD_KEY = ZNQ_PREFIX + SPLIT_FLAG + "PERIOD";
-
     // 周年庆活动 每个用户信息的前缀 HASH结构
     private static final  String MASTER_INFO_PREFIX = ZNQ_PREFIX +SPLIT_FLAG + "MASTERINFO";
 
     // 每个奖品的统一前缀 HASH 结构
     private static final String PRIZE_INFO_PREFIX = ZNQ_PREFIX + SPLIT_FLAG + "PRIZEINFO";
-
-
-    /**
-     *
-     * @param beginDate
-     * @param endDate
-     * @return
-     */
-    public static String periodValue(Date beginDate, Date endDate){
-        return beginDate.getTime() + SPLIT_FLAG + endDate.getTime();
-    }
 
     /**
      * 获取用户相关的信息的redis key

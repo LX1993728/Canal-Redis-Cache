@@ -9,4 +9,9 @@ public interface ZnqLotteryService {
      * @return
      */
     boolean isZnqTurnOn();
+
+    /**
+     * 每天的重置操作
+     */
+    void clearAndResetEveryDay();
 }
