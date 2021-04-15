@@ -1,5 +1,6 @@
 package com.redis.lottery.constants;
 
+import com.redis.lottery.utils.DateUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
@@ -33,7 +34,7 @@ public class ZnqRedisKeyConfig {
      * @return
      */
     public static String getMasterInfoKey(String masterId){
-        return MASTER_INFO_PREFIX + SPLIT_FLAG + masterId;
+        return MASTER_INFO_PREFIX + SPLIT_FLAG + masterId + SPLIT_FLAG + DateUtils.getCurrentDate();
     }
 
     /**
@@ -42,7 +43,7 @@ public class ZnqRedisKeyConfig {
      * @return
      */
     public static String getPrizeInfoKey(String prizeId){
-        return PRIZE_INFO_PREFIX + SPLIT_FLAG + prizeId;
+        return PRIZE_INFO_PREFIX + SPLIT_FLAG + prizeId + SPLIT_FLAG + DateUtils.getCurrentDate();
     }
 
 

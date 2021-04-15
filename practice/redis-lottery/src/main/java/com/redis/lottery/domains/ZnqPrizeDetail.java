@@ -18,7 +18,7 @@ public class ZnqPrizeDetail {
     //id: 详情表ID
     private Long id;
 
-    //masterid：主播id
+    //masterid：直播间粉丝的masterId
     private Long masterid;
 
     //roleid: 主播的角色id
