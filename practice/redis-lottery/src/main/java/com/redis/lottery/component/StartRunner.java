@@ -1,0 +1,54 @@
+package com.redis.lottery.component;
+
+import com.redis.lottery.domains.Master;
+import com.redis.lottery.domains.ZnqPrize;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+import java.util.concurrent.TimeUnit;
+
+@Slf4j
+@Component
+public class StartRunner implements ApplicationRunner {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Override
+    @Transactional
+    public void run(ApplicationArguments args) throws Exception {
+        TimeUnit.SECONDS.sleep(3);
+        log.info("---------------程序执行完毕，开始执行初始化操作-------------------");
+        // 初始化模拟数据
+        // TODO: 模拟Task 启动， 启动定时器
+        // 开始进行lottery 相关的redis key相关的操作...
+        log.info("---------------执行初始化操作完毕...   -------------------");
+    }
+
+    private void initEntityTable(){
+        Master master1 = new Master(null,1L,"张三");
+        Master master2 = new Master(null,1L,"李四");
+        Master master3 = new Master(null,1L,"王五");
+        Master master4 = new Master(null,2L,"赵刘");
+        Master master5 = new Master(null,2L,"宋七");
+        Master master6 = new Master(null,2L,"钱八");
+
+        // 创建奖品实例
+        ZnqPrize znqPrize1 = new ZnqPrize(null, "iPad", "特等奖", "http://imagexxx", 1, 1, 0.003 * 0.01, -1, "3");
+        ZnqPrize znqPrize2 = new ZnqPrize(null, "10000星钻", "一等奖", "http://imagexxx", 1, 6, 0.01 * 0.01, 10000, "3");
+        ZnqPrize znqPrize3 = new ZnqPrize(null, "100星钻", "二等奖", "http://imagexxx", 0, 1000, 2 * 0.01, 100, "3");
+        ZnqPrize znqPrize4 = new ZnqPrize(null, "限定入场特效\"焦骨牡丹\" (7天)", "三等奖", "http://imagexxx", 0, 2000, 4 * 0.01, 0, "3");
+        ZnqPrize znqPrize5 = new ZnqPrize(null, "5星钻", "四等奖", "http://imagexxx", 0, 5000, 10 * 0.01, 5, "3");
+        ZnqPrize znqPrize6 = new ZnqPrize(null, "2星钻", "五等奖", "http://imagexxx", 0, 20000, 40 * 0.01, 2, "3");
+        ZnqPrize znqPrize7 = new ZnqPrize(null, "谢谢参与", "其他", "http://imagexxx", 0, 10000000, 43.99 * 0.01, -2, "3");
+
+
+        entityManager.persist(master1);
+
+        log.info("表数据实例化完毕......");
+    }
+}

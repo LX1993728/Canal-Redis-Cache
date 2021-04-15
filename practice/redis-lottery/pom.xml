@@ -37,6 +37,18 @@
             <version>3.3.0</version>
         </dependency>
 
+        <!--    jpa mysql 相关    -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!--   常用的工具包    -->
         <dependency>
             <groupId>cn.hutool</groupId>
