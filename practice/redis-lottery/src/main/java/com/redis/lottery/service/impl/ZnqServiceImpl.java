@@ -1,11 +1,13 @@
 package com.redis.lottery.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.redis.lottery.constants.ZnqRedisKeyConfig;
 import com.redis.lottery.domains.ZnqPrize;
 import com.redis.lottery.service.ZnqService;
 import com.redis.lottery.utils.DateUtils;
 import com.redis.lottery.utils.JedisUtils;
 import com.redis.lottery.vo.ZnqLotteryVO;
+import com.redis.lottery.vo.ZnqPrizeItemVO;
 import com.redis.lottery.vo.ZnqPrizeVO;
 import com.redis.lottery.vo.ZnqRoomInfoVO;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import redis.clients.jedis.Tuple;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -140,11 +143,67 @@ public class ZnqServiceImpl implements ZnqService {
     @Override
     public ZnqLotteryVO lottery(Long masterId, Long targetMasterId) {
         final String roomInfoKey = ZnqRedisKeyConfig.getLiveRoomInfoKey(Long.toString(targetMasterId));
+        ZnqRoomInfoVO znqRVO = null;
+        // 抽奖锁 LockPrefix = znq_lottery_master_{targetMasterId}
+        // 更新锁 LockPrefix = znq_update_master_{targetMasterId} / znq_prize_{prizeId}
+
+        // 抽奖锁 start Lock key: targetMasterId 一个直播间只能由一个人抽奖
         final Boolean exists = jedisUtils.exists(roomInfoKey);
         if (!exists){
-            //TODO: init create ZnqRoomInfoVO to redis use fast json
+            //init create ZnqRoomInfoVO to redis use fast json
+            znqRVO = new ZnqRoomInfoVO(targetMasterId, 0, 0, new HashSet<>(), 0, 999, 0);
+            String znqRVOStr = JSON.toJSONString(znqRVO);
+            jedisUtils.set(roomInfoKey, znqRVOStr);
         }
 
+        if (znqRVO == null){
+            String znqRRVOStr = jedisUtils.get(roomInfoKey);
+            znqRVO = JSON.parseObject(znqRRVOStr, ZnqRoomInfoVO.class);
+        }
+
+        int type = znqRVO.getType();
+        if (type == 3){
+            return null;
+        }
+        String prizeIdPoolKey = ZnqRedisKeyConfig.getPrizeIdPoolKey(type);
+        Set<Tuple> prizets = jedisUtils.action(jedis -> jedis.zrangeWithScores(prizeIdPoolKey, 0, 100));
+        final int a = 1000000;
+        List<ZnqPrizeItemVO> itemVOS = new ArrayList<>();
+        int temp = 1;
+        for (Tuple t : prizets){
+            String id = t.getElement();
+            int begin = temp;
+            int end = (int) (a * t.getScore() + temp);
+            itemVOS.add(new ZnqPrizeItemVO(Long.parseLong(id), begin, end));
+            temp = end + 1;
+        }
+        Long prizeId = null;
+        int min = 1;
+        // 只抽一次 如果没抽中 或者 奖品没了 不重新抽
+        Random rand = new Random();
+        int num = rand.nextInt((a - min) + 1) + min;
+        for (ZnqPrizeItemVO item : itemVOS){
+            if (item.drawn(num)){
+                prizeId = item.getPrizeId();
+            }
+        }
+
+
+        if (prizeId != null){
+            // lock prizeId
+
+            // release lock prizeId
+        }
+
+        // 抽完 更新roomInfo
+        String newStr = jedisUtils.get(roomInfoKey);
+        znqRVO = JSON.parseObject(newStr, ZnqRoomInfoVO.class);
+        znqRVO.setDrawn(znqRVO.getDrawn() + 1);
+        jedisUtils.set(roomInfoKey, JSON.toJSONString(znqRVO));
+
+        // 外围锁 release Lock
+
+        // 如果抽中存储抽奖记录
         return null;
     }
 

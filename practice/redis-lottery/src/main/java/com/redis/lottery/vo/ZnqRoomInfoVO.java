@@ -19,8 +19,6 @@ import java.util.Set;
 @NoArgsConstructor
 public class ZnqRoomInfoVO {
     private Long masterId; // 主播Id
-    private String masterName; // 主播名称
-
     private Integer firstCharms; // 第一阶段的魅力值
     private Integer firstShared; // 已经分享的次数
     private Set<Integer> firstBarrageMIds; // 不同用户发送弹幕的数量
