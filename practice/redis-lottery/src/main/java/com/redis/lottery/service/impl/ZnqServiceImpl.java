@@ -1,6 +1,5 @@
 package com.redis.lottery.service.impl;
 
-import cn.hutool.core.lang.Assert;
 import com.redis.lottery.constants.ZnqRedisKeyConfig;
 import com.redis.lottery.domains.ZnqPrize;
 import com.redis.lottery.service.ZnqService;
@@ -8,10 +7,12 @@ import com.redis.lottery.utils.DateUtils;
 import com.redis.lottery.utils.JedisUtils;
 import com.redis.lottery.vo.ZnqLotteryVO;
 import com.redis.lottery.vo.ZnqPrizeVO;
+import com.redis.lottery.vo.ZnqRoomInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -78,7 +79,7 @@ public class ZnqServiceImpl implements ZnqService {
 
     @Override
     public ZnqPrizeVO getTodayPrizeInfoFromPrizeId(Long prizeId){
-        Assert.notNull(prizeId);
+        Assert.notNull(prizeId, "prizeId cannot be null");
         final String prizeInfoKey = ZnqRedisKeyConfig.getPrizeInfoKey(Long.toString(prizeId));
         final Boolean exists = jedisUtils.exists(prizeInfoKey);
         if (exists){
@@ -141,8 +142,7 @@ public class ZnqServiceImpl implements ZnqService {
         final String roomInfoKey = ZnqRedisKeyConfig.getLiveRoomInfoKey(Long.toString(targetMasterId));
         final Boolean exists = jedisUtils.exists(roomInfoKey);
         if (!exists){
-
-
+            //TODO: init create ZnqRoomInfoVO to redis use fast json
         }
 
         return null;
