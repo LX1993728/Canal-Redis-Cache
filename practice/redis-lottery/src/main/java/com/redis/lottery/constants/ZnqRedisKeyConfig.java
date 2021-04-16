@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,19 +21,22 @@ public class ZnqRedisKeyConfig {
     @Getter
     private static final long EXPIRE_TIME = TimeUnit.DAYS.toSeconds(1) + 10;
 
-    // 周年庆活动 每个用户信息的前缀 HASH结构
-    private static final  String MASTER_INFO_PREFIX = ZNQ_PREFIX +SPLIT_FLAG + "MASTERINFO";
+    // 周年庆活动 每个直播间信息的前缀 JSON结构
+    private static final  String ROOM_INFO_PREFIX = ZNQ_PREFIX +SPLIT_FLAG + "ROOMINFO";
 
     // 每个奖品的统一前缀 HASH 结构
     private static final String PRIZE_INFO_PREFIX = ZNQ_PREFIX + SPLIT_FLAG + "PRIZEINFO";
 
+    // 每个奖池统一前缀 ZSET 结构
+    private static final String PRIZE_ID_POOL_PREFIX = ZNQ_PREFIX + SPLIT_FLAG + "PRIZEIDPOOL";
+
     /**
-     * 获取用户相关的信息的redis key
-     * @param masterId
+     * 获取直播间相关的信息的redis key
+     * @param targetMasterId 抽奖所在直播间对应的主播ID
      * @return
      */
-    public static String getMasterInfoKey(String masterId){
-        return MASTER_INFO_PREFIX + SPLIT_FLAG + masterId + SPLIT_FLAG + DateUtils.getCurrentDate();
+    public static String getLiveRoomInfoKey(String targetMasterId){
+        return ROOM_INFO_PREFIX + SPLIT_FLAG + targetMasterId + SPLIT_FLAG + DateUtils.getCurrentDate();
     }
 
     /**
@@ -47,7 +49,14 @@ public class ZnqRedisKeyConfig {
     }
 
 
-
-
+    /**
+     *
+     * @param type 每个任务阶段类型的标识
+     * @return
+     */
+    public static String getPrizeIdPoolKey(int type){
+        Assert.isTrue(type >= 1 && type <= 3, "the znq task type must in [1,3] !!!");
+        return String.format("%s%s%s%s%s", PRIZE_ID_POOL_PREFIX, SPLIT_FLAG,type,SPLIT_FLAG,DateUtils.getCurrentDate());
+    }
 
 }

@@ -3,10 +3,12 @@ package com.redis.lottery.domains;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 
 @Data
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -32,7 +34,8 @@ public class ZnqPrize {
     //total: **每天**发放奖品的总数量
     private Integer total;
 
-    //probability: 中奖概率
+    //probability: 中奖概率 百分比
+    @Column(length = 10, precision = 2)
     private Double probability;
 
     @Column(name = "star_diamonds")

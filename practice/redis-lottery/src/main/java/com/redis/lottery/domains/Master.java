@@ -3,10 +3,12 @@ package com.redis.lottery.domains;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 
 @Data
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -18,7 +20,6 @@ public class Master {
 
     @Column(name = "role_id")
     private Long roleId;
-
 
     private String username;
 

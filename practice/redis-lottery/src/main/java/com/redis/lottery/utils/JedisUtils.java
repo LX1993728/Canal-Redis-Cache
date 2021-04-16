@@ -103,8 +103,20 @@ public class JedisUtils {
      * @param value 值（一个Map）
      * @return 存在则更新并返回0，不存在则新建并返回1
      */
+    @Deprecated // 直接设置Map 需要使用hmset
     public Long hSet(String key, Map<String, String> value) {
         return action(jedis -> jedis.hset(key, value));
+    }
+
+    /**
+     * Redis设置Hash
+     *
+     * @param key   键
+     * @param value 值（一个Map）
+     * @return 存在则更新并返回0，不存在则新建并返回1
+     */
+    public String hmSet(String key, Map<String, String> value) {
+        return action(jedis -> jedis.hmset(key, value));
     }
 
     /**

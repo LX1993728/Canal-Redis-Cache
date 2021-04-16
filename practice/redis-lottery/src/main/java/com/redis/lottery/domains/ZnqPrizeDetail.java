@@ -3,11 +3,13 @@ package com.redis.lottery.domains;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Data
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -21,8 +23,11 @@ public class ZnqPrizeDetail {
     //masterid：直播间粉丝的masterId
     private Long masterid;
 
-    //roleid: 主播的角色id
+    //roleid: 粉丝的角色id
     private Long roldid;
+
+    // roomId：中奖所在的直播间的主播ID
+    private Long targetid;
 
     //prizeid: 中奖的奖品id
     private Long prizeid;
@@ -45,8 +50,8 @@ public class ZnqPrizeDetail {
     //code: 中奖码
     private String code;
 
-    //stage: 活动的阶段 (1-基础阶段,2-进阶阶段,3-彩蛋阶段)
-    private Integer stage;
+    //stage: 活动的阶段类型 (1-基础阶段,2-进阶阶段,3-彩蛋阶段)
+    private Integer type;
 
     //allow_edit: 是否允许编辑
     @Column(name = "allow_edit")
