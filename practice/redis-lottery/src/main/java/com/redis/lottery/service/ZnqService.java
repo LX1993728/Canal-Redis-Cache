@@ -2,6 +2,7 @@ package com.redis.lottery.service;
 
 import com.redis.lottery.vo.ZnqLotteryVO;
 import com.redis.lottery.vo.ZnqPrizeVO;
+import com.redis.lottery.vo.ZnqRoomInfoVO;
 
 /**
  * 周年庆活动
@@ -38,6 +39,13 @@ public interface ZnqService {
      * @return
      */
     public boolean updateTodayPrizeInfoFromPrizeVO(ZnqPrizeVO prizeVO);
+
+    /**
+     *
+     * @param targetRoomId
+     * @return
+     */
+    public ZnqRoomInfoVO updateTodayRoomInfo(ZnqRoomInfoVO znqRoomInfoVO);
 
     // 抽奖逻辑
     public ZnqLotteryVO lottery(Long masterId, Long targetMasterId);

@@ -78,6 +78,8 @@ public class ZnqServiceImpl implements ZnqService {
             }
         }
 
+        // test drawn
+        lottery(1L, 2L);
     }
 
     @Override
@@ -141,6 +143,15 @@ public class ZnqServiceImpl implements ZnqService {
     }
 
     @Override
+    public ZnqRoomInfoVO updateTodayRoomInfo(ZnqRoomInfoVO znqRoomInfoVO) {
+        final Long targetMasterId = znqRoomInfoVO.getMasterId();
+        Assert.notNull(targetMasterId, "targetid must not be mull !!!");
+        final ZnqRoomInfoVO roomInfoVO = initOrGetRoomInfo(targetMasterId);
+        Assert.notNull(roomInfoVO, "roomInfoVO must not be mull !!!");
+        return null;
+    }
+
+    @Override
     public ZnqLotteryVO lottery(Long masterId, Long targetMasterId) {
         final String roomInfoKey = ZnqRedisKeyConfig.getLiveRoomInfoKey(Long.toString(targetMasterId));
         ZnqRoomInfoVO znqRVO = null;
@@ -161,11 +172,11 @@ public class ZnqServiceImpl implements ZnqService {
             znqRVO = JSON.parseObject(znqRRVOStr, ZnqRoomInfoVO.class);
         }
 
-        int type = znqRVO.getType();
-        if (type == 3){
+        if (!znqRVO.canDrawn()){
+            log.warn("不允许抽奖(任务未完成或已经抽完)");
             return null;
         }
-        String prizeIdPoolKey = ZnqRedisKeyConfig.getPrizeIdPoolKey(type);
+        String prizeIdPoolKey = ZnqRedisKeyConfig.getPrizeIdPoolKey(znqRVO.getType());
         Set<Tuple> prizets = jedisUtils.action(jedis -> jedis.zrangeWithScores(prizeIdPoolKey, 0, 100));
         final int a = 1000000;
         List<ZnqPrizeItemVO> itemVOS = new ArrayList<>();
@@ -173,10 +184,15 @@ public class ZnqServiceImpl implements ZnqService {
         for (Tuple t : prizets){
             String id = t.getElement();
             int begin = temp;
-            int end = (int) (a * t.getScore() + temp);
+            int end = (int) (a * t.getScore() * 0.01 + temp);
             itemVOS.add(new ZnqPrizeItemVO(Long.parseLong(id), begin, end));
             temp = end + 1;
         }
+
+       for (ZnqPrizeItemVO vo : itemVOS){
+           log.info("{}", vo);
+       }
+
         Long prizeId = null;
         int min = 1;
         // 只抽一次 如果没抽中 或者 奖品没了 不重新抽
@@ -188,6 +204,7 @@ public class ZnqServiceImpl implements ZnqService {
             }
         }
 
+        log.info("random={} prizeId={}", num, prizeId);
 
         if (prizeId != null){
             // lock prizeId
@@ -209,6 +226,23 @@ public class ZnqServiceImpl implements ZnqService {
 
 
     // ------------------------- the base is all private methods -----------------------
+
+    private ZnqRoomInfoVO initOrGetRoomInfo(Long targetMasterId){
+        final String roomInfoKey = ZnqRedisKeyConfig.getLiveRoomInfoKey(Long.toString(targetMasterId));
+        ZnqRoomInfoVO znqRVO = null;
+        final Boolean exists = jedisUtils.exists(roomInfoKey);
+        if (!exists){
+            znqRVO = new ZnqRoomInfoVO(targetMasterId, 0, 0, new HashSet<>(), 0, 999, 0);
+            String znqRVOStr = JSON.toJSONString(znqRVO);
+            jedisUtils.set(roomInfoKey, znqRVOStr);
+        }
+
+        if (znqRVO == null){
+            String znqRRVOStr = jedisUtils.get(roomInfoKey);
+            znqRVO = JSON.parseObject(znqRRVOStr, ZnqRoomInfoVO.class);
+        }
+        return znqRVO;
+    }
 
     private boolean setPrizeInfoFromPrizeEntity(ZnqPrize zp){
         if (zp == null){

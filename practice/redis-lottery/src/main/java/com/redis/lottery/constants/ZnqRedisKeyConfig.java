@@ -30,6 +30,9 @@ public class ZnqRedisKeyConfig {
     // 每个奖池统一前缀 ZSET 结构
     private static final String PRIZE_ID_POOL_PREFIX = ZNQ_PREFIX + SPLIT_FLAG + "PRIZEIDPOOL";
 
+    //
+    private static final String LOCKPREFIX = ZNQ_PREFIX + SPLIT_FLAG + "LOCK";
+
     /**
      * 获取直播间相关的信息的redis key
      * @param targetMasterId 抽奖所在直播间对应的主播ID
@@ -58,5 +61,34 @@ public class ZnqRedisKeyConfig {
         Assert.isTrue(type >= 1 && type <= 3, "the znq task type must in [1,3] !!!");
         return String.format("%s%s%s%s%s", PRIZE_ID_POOL_PREFIX, SPLIT_FLAG,type,SPLIT_FLAG,DateUtils.getCurrentDate());
     }
+
+    /**
+     * 抽奖时使用
+     * @param targetMasterId
+     * @return
+     */
+    public static String getLockLotteryRoomInfoKey(String targetMasterId){
+        return String.format("%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "LOPTTERYROOMINFO", SPLIT_FLAG, targetMasterId);
+    }
+
+    /**
+     * 创建修改更新room info时使用
+     * @param targetMasterId
+     * @return
+     */
+    public static String getLockUpdateRoomInfoKey(String targetMasterId){
+        return String.format("%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "UPDATEROOMINFO", SPLIT_FLAG, targetMasterId);
+    }
+
+    /**
+     * 创建修改更新prize info时使用
+     * @param prizeId
+     * @return
+     */
+    public static String getLockUpdatePrizeInfoKey(String prizeId){
+        return String.format("%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "UPDATEPRIZEINFO", SPLIT_FLAG, prizeId);
+    }
+
+
 
 }

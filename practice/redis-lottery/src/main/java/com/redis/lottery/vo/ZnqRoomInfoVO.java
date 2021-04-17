@@ -30,7 +30,7 @@ public class ZnqRoomInfoVO {
     private Integer drawn =0; // 已经抽奖次数
 
     // 获取响应结果
-    public Map<String, Object> getResult(){
+    public Map<String, Object> acquireResult(){
         if (firstBarrageMIds == null){
             firstBarrageMIds =new HashSet<>();
         }
@@ -103,9 +103,15 @@ public class ZnqRoomInfoVO {
     }
 
     public int getType(){
-        final Map<String, Object> result = getResult();
+        final Map<String, Object> result = acquireResult();
         Assert.notNull(result, "result cannot be null !!!!");
         return (int) result.get("type");
+    }
+
+    public boolean canDrawn(){
+        final Map<String, Object> result = acquireResult();
+        Assert.notNull(result, "result cannot be null !!!!");
+        return (Boolean) result.get("canDrawn");
     }
 
     public boolean isCompleted(){
