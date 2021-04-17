@@ -1,5 +1,6 @@
 package com.redis.lottery.service;
 
+import com.redis.lottery.service.impl.ZnqServiceImpl;
 import com.redis.lottery.vo.ZnqLotteryVO;
 import com.redis.lottery.vo.ZnqPrizeVO;
 import com.redis.lottery.vo.ZnqRoomInfoVO;
@@ -41,11 +42,12 @@ public interface ZnqService {
     public boolean updateTodayPrizeInfoFromPrizeVO(ZnqPrizeVO prizeVO);
 
     /**
-     *
-     * @param targetRoomId
+     * 处理并获取roominfo
+     * @param targetMasterId
+     * @param action
      * @return
      */
-    public ZnqRoomInfoVO updateTodayRoomInfo(ZnqRoomInfoVO znqRoomInfoVO);
+    public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId, ZnqServiceImpl.UpdateRoomAction<ZnqRoomInfoVO> action);
 
     // 抽奖逻辑
     public ZnqLotteryVO lottery(Long masterId, Long targetMasterId);
