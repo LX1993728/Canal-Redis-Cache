@@ -171,7 +171,7 @@ public class ZnqServiceImpl implements ZnqService {
 
     @Override
     public ZnqLotteryVO lottery(Long masterId, Long targetMasterId) {
-        // TODO://begin Lottery lock
+        // TODO://begin Lottery room lock
         final ZnqRoomInfoVO znqRVO = resolveAndGetRoomInfo(targetMasterId, false, (roomInfoVO, key) -> roomInfoVO);
         if (!znqRVO.canDrawn()){
             log.warn("不允许抽奖(任务未完成或已经抽完)");
@@ -228,7 +228,7 @@ public class ZnqServiceImpl implements ZnqService {
             return roomInfoVO;
         });
 
-        // TODO://begin Lottery lock
+        // TODO://end Lottery room lock
 
         if (hasDrawn){
             // 如果抽中存储抽奖记录
