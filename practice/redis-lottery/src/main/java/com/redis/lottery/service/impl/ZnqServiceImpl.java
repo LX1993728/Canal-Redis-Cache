@@ -143,7 +143,7 @@ public class ZnqServiceImpl implements ZnqService {
     }
 
     @Override
-    public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId, UpdateRoomAction<ZnqRoomInfoVO> action) {
+    public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId, boolean setRedis, UpdateRoomAction<ZnqRoomInfoVO> action) {
         // TODO://update room lock
         Assert.notNull(targetMasterId, "targetid must not be mull !!!");
         final String roomInfoKey = ZnqRedisKeyConfig.getLiveRoomInfoKey(Long.toString(targetMasterId));
@@ -161,6 +161,9 @@ public class ZnqServiceImpl implements ZnqService {
         }
         Assert.notNull(znqRVO, "roomInfoVO must not be mull !!!");
         ZnqRoomInfoVO infoVO = action.action(znqRVO, roomInfoKey);
+        if (setRedis){
+            jedisUtils.set(roomInfoKey, JSON.toJSONString(infoVO));
+        }
         // TODO:// end update lock
         return infoVO;
     }
@@ -169,7 +172,7 @@ public class ZnqServiceImpl implements ZnqService {
     @Override
     public ZnqLotteryVO lottery(Long masterId, Long targetMasterId) {
         // TODO://begin Lottery lock
-        final ZnqRoomInfoVO znqRVO = resolveAndGetRoomInfo(targetMasterId, (roomInfoVO, key) -> roomInfoVO);
+        final ZnqRoomInfoVO znqRVO = resolveAndGetRoomInfo(targetMasterId, false, (roomInfoVO, key) -> roomInfoVO);
         if (!znqRVO.canDrawn()){
             log.warn("不允许抽奖(任务未完成或已经抽完)");
             return null;
@@ -207,14 +210,17 @@ public class ZnqServiceImpl implements ZnqService {
         if (prizeId != null){
             // lock prizeId
 
+            // 如果还有数量从prizeInfo扣除
+
+            // 已发送数量 + 1 后 = total 则移除奖池的prizeId
+
             // release lock prizeId
         }
 
         // 抽完 更新roomInfo
-        resolveAndGetRoomInfo(targetMasterId, (roomInfoVO, key) -> {
+        resolveAndGetRoomInfo(targetMasterId, true, (roomInfoVO, key) -> {
             if (roomInfoVO.canDrawn()){
                 roomInfoVO.setDrawn(roomInfoVO.getDrawn() + 1);
-                jedisUtils.set(key, JSON.toJSONString(roomInfoVO));
             }
             return roomInfoVO;
         });

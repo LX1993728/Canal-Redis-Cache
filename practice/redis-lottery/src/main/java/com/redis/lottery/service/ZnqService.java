@@ -44,10 +44,11 @@ public interface ZnqService {
     /**
      * 处理并获取roominfo
      * @param targetMasterId
+     * @param setRedis
      * @param action
      * @return
      */
-    public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId, ZnqServiceImpl.UpdateRoomAction<ZnqRoomInfoVO> action);
+    public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId,  boolean setRedis,ZnqServiceImpl.UpdateRoomAction<ZnqRoomInfoVO> action);
 
     // 抽奖逻辑
     public ZnqLotteryVO lottery(Long masterId, Long targetMasterId);
