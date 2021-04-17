@@ -220,7 +220,10 @@ public class ZnqServiceImpl implements ZnqService {
         // 抽完 更新roomInfo
         resolveAndGetRoomInfo(targetMasterId, true, (roomInfoVO, key) -> {
             if (roomInfoVO.canDrawn()){
-                roomInfoVO.setDrawn(roomInfoVO.getDrawn() + 1);
+                int  newDrawn = roomInfoVO.getDrawn() + 1;
+                if (newDrawn <= 3){
+                    roomInfoVO.setDrawn(newDrawn);
+                }
             }
             return roomInfoVO;
         });
