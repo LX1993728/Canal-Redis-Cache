@@ -103,46 +103,6 @@ public class ZnqServiceImpl implements ZnqService {
     }
 
     @Override
-    public boolean setTodayPrizeInfoFromPrizeEntity(Long prizeId){
-        ZnqPrize zp = null;
-        try {
-            zp = entityManager.find(ZnqPrize.class, prizeId);
-        }catch (Exception e){
-            log.error("cannot find prize by id={}", prizeId);
-        }
-        return setPrizeInfoFromPrizeEntity(zp);
-    }
-
-    @Override
-    public boolean updateTodayPrizeInfoFromPrizeVO(ZnqPrizeVO prizeVO){
-        final String prizeInfoKey = ZnqRedisKeyConfig.getPrizeInfoKey(Long.toString(prizeVO.getId()));
-        final Boolean exists = jedisUtils.exists(prizeInfoKey);
-        if (!exists){
-            log.error("prizeinfo not exists for key {}", prizeInfoKey);
-            return false;
-        }
-        if (prizeVO.getName() != null){
-            jedisUtils.hSet(prizeInfoKey, "name", prizeVO.getName());
-        }
-        if (prizeVO.getBroad() != null){
-            jedisUtils.hSet(prizeInfoKey, "broad", Integer.toString(prizeVO.getBroad()));
-        }
-        if (prizeVO.getProbability() != null){
-            jedisUtils.hSet(prizeInfoKey, "probability", Double.toString(prizeVO.getProbability()));
-        }
-        if (prizeVO.getTotal() != null){
-            jedisUtils.hSet(prizeInfoKey, "total", Integer.toString(prizeVO.getTotal()));
-        }
-        if (prizeVO.getIssued() != null){
-            jedisUtils.hSet(prizeInfoKey, "issued", Integer.toString(prizeVO.getIssued()));
-        }
-        if (prizeVO.getTypes() != null){
-            jedisUtils.hSet(prizeInfoKey, "types", prizeVO.getTypes());
-        }
-        return true;
-    }
-
-    @Override
     public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId, boolean setRedis, UpdateRoomAction<ZnqRoomInfoVO> action) {
         // TODO://update room lock
         Assert.notNull(targetMasterId, "targetid must not be mull !!!");
@@ -203,21 +163,15 @@ public class ZnqServiceImpl implements ZnqService {
                 prizeId = item.getPrizeId();
             }
         }
-
         log.info("random={} prizeId={}", num, prizeId);
 
         boolean hasDrawn = false;
         if (prizeId != null){
-            // lock prizeId
-
-            // 如果还有数量从prizeInfo扣除
-
-            // 已发送数量 + 1 后 = total 则移除奖池的prizeId
-
-            // release lock prizeId
+           boolean resolved = resolveIssuedAndGetPrizedInfo(prizeId);
+           if (resolved){
+               hasDrawn = true;
+           }
         }
-
-        // 抽完 更新roomInfo
         resolveAndGetRoomInfo(targetMasterId, true, (roomInfoVO, key) -> {
             if (roomInfoVO.canDrawn()){
                 int  newDrawn = roomInfoVO.getDrawn() + 1;
@@ -233,7 +187,7 @@ public class ZnqServiceImpl implements ZnqService {
         if (hasDrawn){
             // 如果抽中存储抽奖记录
             // 且封装ZnqLotteryVO 并返回
-
+            
         }else {
             return null;
         }
@@ -243,19 +197,34 @@ public class ZnqServiceImpl implements ZnqService {
 
     // ------------------------- the base is all private methods -----------------------
 
-    private boolean setPrizeInfoFromPrizeEntity(ZnqPrize zp){
-        if (zp == null){
-            log.error("zp cannot be null !!!");
-            return false;
+    private boolean resolveIssuedAndGetPrizedInfo(Long prizeId){
+        // TODO://lock prize
+        final String prizeInfoKey = ZnqRedisKeyConfig.getPrizeInfoKey(Long.toString(prizeId));
+        final Boolean exists = jedisUtils.exists(prizeInfoKey);
+        Assert.isTrue(exists, "not exist prizeInfo !!!");
+        boolean result;
+        int total = Integer.parseInt(jedisUtils.hGet(prizeInfoKey, "totol"));
+        int issued = Integer.parseInt(jedisUtils.hGet(prizeInfoKey, "issued"));
+        if (issued < total){
+            jedisUtils.hSet(prizeInfoKey, "issued", Integer.toString(issued + 1));
+            result = true;
+        }else {
+            // remove prize from pool
+            String pool1Key = ZnqRedisKeyConfig.getPrizeIdPoolKey(1);
+            String pool2Key = ZnqRedisKeyConfig.getPrizeIdPoolKey(2);
+            String pool3Key = ZnqRedisKeyConfig.getPrizeIdPoolKey(3);
+            jedisUtils.action(jedis -> jedis.zrem(pool1Key, Long.toString(prizeId)));
+            jedisUtils.action(jedis -> jedis.zrem(pool2Key, Long.toString(prizeId)));
+            jedisUtils.action(jedis -> jedis.zrem(pool3Key, Long.toString(prizeId)));
+            result =  false;
         }
-        final String prizeInfoKey = ZnqRedisKeyConfig.getPrizeInfoKey(Long.toString(zp.getId()));
-        Map<String, String> map =  getMapFromPrizeEntity(zp);
-        String result = jedisUtils.hmSet(prizeInfoKey, map);
-        log.info(result);
-        return true;
+
+        // end TODO://lock prize
+        return result;
     }
 
-    private Map<String, String> getMapFromPrizeEntity(ZnqPrize zp){
+    private void setPrizeInfoFromPrizeEntity(ZnqPrize zp){
+        final String prizeInfoKey = ZnqRedisKeyConfig.getPrizeInfoKey(Long.toString(zp.getId()));
         final ZnqPrizeVO prizeVO = new ZnqPrizeVO(zp.getId(), zp.getName(), zp.getProbability(), zp.getTotal(), 0, zp.getBroad(), zp.getTypes());
         Map<String, String> prizeVoMap = new HashMap<>();
         if (prizeVO.getId() != null){
@@ -279,7 +248,8 @@ public class ZnqServiceImpl implements ZnqService {
         if (prizeVO.getTypes() != null){
             prizeVoMap.put("types", prizeVO.getTypes());
         }
-        return prizeVoMap;
+        String result = jedisUtils.hmSet(prizeInfoKey, prizeVoMap);
+        log.info(result);
     }
 
     private Set<Integer> getTypesFromStr(String types){
@@ -300,10 +270,6 @@ public class ZnqServiceImpl implements ZnqService {
 
     public interface UpdateRoomAction<T>{
         T action(ZnqRoomInfoVO roomInfoVO, String key);
-    }
-
-    public interface UpdatePrizeAction<T>{
-        T action(ZnqPrizeVO znqPrizeVO, String key);
     }
 
 }

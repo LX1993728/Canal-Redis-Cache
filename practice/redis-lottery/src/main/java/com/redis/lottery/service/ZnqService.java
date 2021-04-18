@@ -28,20 +28,6 @@ public interface ZnqService {
     public ZnqPrizeVO getTodayPrizeInfoFromPrizeId(Long prizeId);
 
     /**
-     * 往redis设置当天某一项奖品的信息(新建覆盖类型)
-     * @param prizeId
-     * @return
-     */
-    public boolean setTodayPrizeInfoFromPrizeEntity(Long prizeId);
-
-    /**
-     *  redis更新当天某一项奖品的属性信息(存在修改型号)
-     * @param prizeVO
-     * @return
-     */
-    public boolean updateTodayPrizeInfoFromPrizeVO(ZnqPrizeVO prizeVO);
-
-    /**
      * 处理并获取roominfo
      * @param targetMasterId
      * @param setRedis
