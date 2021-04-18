@@ -114,6 +114,9 @@ public class ZnqServiceImpl implements ZnqService {
             String znqRVOStr = JSON.toJSONString(znqRVO);
             jedisUtils.set(roomInfoKey, znqRVOStr);
         }
+        if(!setRedis){
+            // TODO:// release update lock
+        }
 
         if (znqRVO == null){
             String znqRRVOStr = jedisUtils.get(roomInfoKey);
@@ -123,8 +126,8 @@ public class ZnqServiceImpl implements ZnqService {
         ZnqRoomInfoVO infoVO = action.action(znqRVO, roomInfoKey);
         if (setRedis){
             jedisUtils.set(roomInfoKey, JSON.toJSONString(infoVO));
+            // TODO:// release update lock
         }
-        // TODO:// end update lock
         return infoVO;
     }
 
