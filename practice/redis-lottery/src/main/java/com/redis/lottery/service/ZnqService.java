@@ -38,4 +38,6 @@ public interface ZnqService {
 
     // 抽奖逻辑
     public ZnqLotteryVO lottery(Long masterId, Long targetMasterId);
+
+    // TODO:// 封装活动任务(魅力值/分享/弹幕/蛋糕) 业务逻辑方法
 }

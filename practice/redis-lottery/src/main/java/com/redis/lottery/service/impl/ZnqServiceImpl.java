@@ -78,8 +78,8 @@ public class ZnqServiceImpl implements ZnqService {
             }
         }
 
-        // test drawn
-        lottery(1L, 2L);
+        // test
+        jedisUtils.action(jedis -> jedis.zrem(prizeIdPool1key, Long.toString(100)));
     }
 
     @Override
@@ -185,9 +185,14 @@ public class ZnqServiceImpl implements ZnqService {
         // TODO://end Lottery room lock
 
         if (hasDrawn){
-            // 如果抽中存储抽奖记录
+            // TODO:// 抽中奖品后的逻辑 DelayTask
+            // 如果抽中则进行以下操作
+            // 1. 存储抽奖记录
+            // 2. 判断获奖类型 如果是星钻或特效则延时发放到粉丝 账户
+            // 3. 发送TCP消息到直播间，如果broad 则全站广播
+
             // 且封装ZnqLotteryVO 并返回
-            
+
         }else {
             return null;
         }
