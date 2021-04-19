@@ -8,7 +8,7 @@ import com.redis.lottery.vo.ZnqRoomInfoVO;
 /**
  * 周年庆活动
  */
-public interface ZnqService {
+public interface IZnqService {
     /**
      * 判断周年庆活动是否开启
      * @return
@@ -34,7 +34,7 @@ public interface ZnqService {
      * @param action
      * @return
      */
-    public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId,  boolean setRedis,ZnqServiceImpl.UpdateRoomAction<ZnqRoomInfoVO> action);
+    public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId, boolean setRedis, ZnqServiceImpl.UpdateRoomAction<ZnqRoomInfoVO> action);
 
     // 抽奖逻辑
     public ZnqLotteryVO lottery(Long masterId, Long targetMasterId);

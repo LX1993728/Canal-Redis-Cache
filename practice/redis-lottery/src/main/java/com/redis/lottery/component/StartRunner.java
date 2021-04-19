@@ -2,8 +2,7 @@ package com.redis.lottery.component;
 
 import com.redis.lottery.domains.Master;
 import com.redis.lottery.domains.ZnqPrize;
-import com.redis.lottery.service.ZnqService;
-import lombok.ToString;
+import com.redis.lottery.service.IZnqService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -22,7 +21,7 @@ public class StartRunner implements ApplicationRunner {
     private EntityManager entityManager;
 
     @Autowired
-    private ZnqService znqService;
+    private IZnqService IZnqService;
 
     @Override
     @Transactional
@@ -32,7 +31,7 @@ public class StartRunner implements ApplicationRunner {
         // 初始化模拟数据
         initEntityTable();
         // 开始进行znq 初始化相关的操作...
-        znqService.clearAndResetEveryDay();
+        IZnqService.clearAndResetEveryDay();
         log.info("---------------执行初始化操作完毕...   -------------------");
     }
 

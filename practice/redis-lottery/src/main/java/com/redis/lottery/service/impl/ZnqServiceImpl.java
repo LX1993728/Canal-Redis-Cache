@@ -3,7 +3,7 @@ package com.redis.lottery.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.redis.lottery.constants.ZnqRedisKeyConfig;
 import com.redis.lottery.domains.ZnqPrize;
-import com.redis.lottery.service.ZnqService;
+import com.redis.lottery.service.IZnqService;
 import com.redis.lottery.utils.DateUtils;
 import com.redis.lottery.utils.JedisUtils;
 import com.redis.lottery.vo.ZnqLotteryVO;
@@ -25,7 +25,7 @@ import java.util.*;
 @Slf4j
 @Transactional(value = Transactional.TxType.REQUIRED, rollbackOn = {Exception.class})
 @Service
-public class ZnqServiceImpl implements ZnqService {
+public class ZnqServiceImpl implements IZnqService {
     @PersistenceContext
     private EntityManager entityManager;
 
