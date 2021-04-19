@@ -1,7 +1,7 @@
 package com.redis.lottery.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.redis.lottery.constants.ZnqRedisKeyConfig;
+import com.redis.lottery.constants.ZnqKeyConfig;
 import com.redis.lottery.constants.ZnqRoomAction;
 import com.redis.lottery.domains.ZnqPrize;
 import com.redis.lottery.service.IZnqService;
@@ -48,7 +48,7 @@ public class ZnqServiceImpl implements IZnqService {
 
     @Override
     public void clearAndResetEveryDay() {
-        String znqPattern = ZnqRedisKeyConfig.getZNQ_PREFIX() + "_*";
+        String znqPattern = ZnqKeyConfig.getZNQ_PREFIX() + "_*";
         Set<String> znqKeys = jedisUtils.action(jedis -> jedis.keys(znqPattern));
         if (znqKeys != null && !znqKeys.isEmpty()){
             long delCount  = jedisUtils.action(jedis -> jedis.del(znqKeys.toArray(new String[]{})));
@@ -58,9 +58,9 @@ public class ZnqServiceImpl implements IZnqService {
         }
 
         // 初始化奖品信息
-        final String prizeIdPool1key = ZnqRedisKeyConfig.getPrizeIdPoolKey(1);
-        final String prizeIdPool2key = ZnqRedisKeyConfig.getPrizeIdPoolKey(2);
-        final String prizeIdPool3key = ZnqRedisKeyConfig.getPrizeIdPoolKey(3);
+        final String prizeIdPool1key = ZnqKeyConfig.getPrizeIdPoolKey(1);
+        final String prizeIdPool2key = ZnqKeyConfig.getPrizeIdPoolKey(2);
+        final String prizeIdPool3key = ZnqKeyConfig.getPrizeIdPoolKey(3);
         final List<ZnqPrize> znqPrizes = entityManager.createQuery(
                 "SELECT zp FROM ZnqPrize zp WHERE zp.starDiamonds <> -2 ORDER BY zp.probability ASC",
                 ZnqPrize.class).getResultList();
@@ -86,7 +86,7 @@ public class ZnqServiceImpl implements IZnqService {
     @Override
     public ZnqPrizeVO getTodayPrizeInfoFromPrizeId(Long prizeId){
         Assert.notNull(prizeId, "prizeId cannot be null");
-        final String prizeInfoKey = ZnqRedisKeyConfig.getPrizeInfoKey(Long.toString(prizeId));
+        final String prizeInfoKey = ZnqKeyConfig.getPrizeInfoKey(Long.toString(prizeId));
         final Boolean exists = jedisUtils.exists(prizeInfoKey);
         if (exists){
             ZnqPrizeVO prizeVO = new ZnqPrizeVO();
@@ -107,7 +107,7 @@ public class ZnqServiceImpl implements IZnqService {
     public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId, boolean setRedis, ZnqRoomAction<ZnqRoomInfoVO> action) {
         // TODO://update room lock
         Assert.notNull(targetMasterId, "targetid must not be mull !!!");
-        final String roomInfoKey = ZnqRedisKeyConfig.getLiveRoomInfoKey(Long.toString(targetMasterId));
+        final String roomInfoKey = ZnqKeyConfig.getLiveRoomInfoKey(Long.toString(targetMasterId));
         ZnqRoomInfoVO znqRVO = null;
         final Boolean exists = jedisUtils.exists(roomInfoKey);
         if (!exists){
@@ -141,7 +141,7 @@ public class ZnqServiceImpl implements IZnqService {
             log.warn("不允许抽奖(任务未完成或已经抽完)");
             return null;
         }
-        String prizeIdPoolKey = ZnqRedisKeyConfig.getPrizeIdPoolKey(znqRVO.getType());
+        String prizeIdPoolKey = ZnqKeyConfig.getPrizeIdPoolKey(znqRVO.getType());
         Set<Tuple> prizets = jedisUtils.action(jedis -> jedis.zrangeWithScores(prizeIdPoolKey, 0, 100));
         final int a = 1000000;
         List<ZnqPrizeItemVO> itemVOS = new ArrayList<>();
@@ -208,7 +208,7 @@ public class ZnqServiceImpl implements IZnqService {
 
     private boolean resolveIssuedAndGetPrizedInfo(Long prizeId){
         // TODO://lock prize
-        final String prizeInfoKey = ZnqRedisKeyConfig.getPrizeInfoKey(Long.toString(prizeId));
+        final String prizeInfoKey = ZnqKeyConfig.getPrizeInfoKey(Long.toString(prizeId));
         final Boolean exists = jedisUtils.exists(prizeInfoKey);
         Assert.isTrue(exists, "not exist prizeInfo !!!");
         boolean result;
@@ -219,9 +219,9 @@ public class ZnqServiceImpl implements IZnqService {
             result = true;
         }else {
             // remove prize from pool
-            String pool1Key = ZnqRedisKeyConfig.getPrizeIdPoolKey(1);
-            String pool2Key = ZnqRedisKeyConfig.getPrizeIdPoolKey(2);
-            String pool3Key = ZnqRedisKeyConfig.getPrizeIdPoolKey(3);
+            String pool1Key = ZnqKeyConfig.getPrizeIdPoolKey(1);
+            String pool2Key = ZnqKeyConfig.getPrizeIdPoolKey(2);
+            String pool3Key = ZnqKeyConfig.getPrizeIdPoolKey(3);
             jedisUtils.action(jedis -> jedis.zrem(pool1Key, Long.toString(prizeId)));
             jedisUtils.action(jedis -> jedis.zrem(pool2Key, Long.toString(prizeId)));
             jedisUtils.action(jedis -> jedis.zrem(pool3Key, Long.toString(prizeId)));
@@ -233,7 +233,7 @@ public class ZnqServiceImpl implements IZnqService {
     }
 
     private void setPrizeInfoFromPrizeEntity(ZnqPrize zp){
-        final String prizeInfoKey = ZnqRedisKeyConfig.getPrizeInfoKey(Long.toString(zp.getId()));
+        final String prizeInfoKey = ZnqKeyConfig.getPrizeInfoKey(Long.toString(zp.getId()));
         final ZnqPrizeVO prizeVO = new ZnqPrizeVO(zp.getId(), zp.getName(), zp.getProbability(), zp.getTotal(), 0, zp.getBroad(), zp.getTypes());
         Map<String, String> prizeVoMap = new HashMap<>();
         if (prizeVO.getId() != null){

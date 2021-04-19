@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
  * 周年庆活动redis-key的配置表
  */
 @Slf4j
-public class ZnqRedisKeyConfig {
+public class ZnqKeyConfig {
     @Getter
     private static final String ZNQ_PREFIX = "ZNQ"; // 所有周年庆活动的标识
     // 周年庆活动 key的连接符
