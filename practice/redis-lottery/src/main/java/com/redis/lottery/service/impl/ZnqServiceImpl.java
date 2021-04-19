@@ -108,7 +108,7 @@ public class ZnqServiceImpl implements IZnqService {
         ZnqRoomInfoVO znqRVO = null;
         final Boolean exists = jedisUtils.exists(roomInfoKey);
         if (!exists){
-            znqRVO = new ZnqRoomInfoVO(targetMasterId, 0, 0, new HashSet<>(), 0, 999, 0);
+            znqRVO = new ZnqRoomInfoVO(targetMasterId, 0, 0, new HashSet<>(), 0, 999);
             String znqRVOStr = JSON.toJSONString(znqRVO);
             jedisUtils.set(roomInfoKey, znqRVOStr);
         }
@@ -132,13 +132,15 @@ public class ZnqServiceImpl implements IZnqService {
 
     @Override
     public ZnqLotteryVO lottery(Long masterId, Long targetMasterId) {
-        // TODO://begin Lottery room lock
         final ZnqRoomInfoVO znqRVO = resolveAndGetRoomInfo(targetMasterId, false, (roomInfoVO, key) -> roomInfoVO);
-        if (!znqRVO.canDrawn()){
+        final ZnqRoomInfoVO roomInfoVO = resolveAndGetRoomInfo(targetMasterId, false, (roomInfoVO1, key) -> roomInfoVO1);
+        final ZnqTaskConfigVO taskConfig = getTaskConfig(false);
+        final ZnqRoomInfoVO.Info info = roomInfoVO.acquireInfoResult(taskConfig);
+       if (info.getDrawn() != 0){
             log.warn("不允许抽奖(任务未完成或已经抽完)");
             return null;
         }
-        String prizeIdPoolKey = ZnqKeyConfig.getPrizeIdPoolKey(znqRVO.getType());
+        String prizeIdPoolKey = ZnqKeyConfig.getPrizeIdPoolKey(info.getType());
         Set<Tuple> prizets = jedisUtils.action(jedis -> jedis.zrangeWithScores(prizeIdPoolKey, 0, 100));
         final int a = 1000000;
         List<ZnqPrizeItemVO> itemVOS = new ArrayList<>();
@@ -166,26 +168,17 @@ public class ZnqServiceImpl implements IZnqService {
         }
         log.info("random={} prizeId={}", num, prizeId);
 
-        boolean hasDrawn = false;
+        boolean hasLottery = false;
         if (prizeId != null){
            boolean resolved = resolveIssuedAndGetPrizedInfo(prizeId);
            if (resolved){
-               hasDrawn = true;
+               hasLottery = true;
            }
         }
-        resolveAndGetRoomInfo(targetMasterId, true, (roomInfoVO, key) -> {
-            if (roomInfoVO.canDrawn()){
-                int  newDrawn = roomInfoVO.getDrawn() + 1;
-                if (newDrawn <= 3){
-                    roomInfoVO.setDrawn(newDrawn);
-                }
-            }
-            return roomInfoVO;
-        });
+       // update fan lottery count in the room
+        updateFanLotteryCountInRoom(masterId, targetMasterId, info);
 
-        // TODO://end Lottery room lock
-
-        if (hasDrawn){
+        if (hasLottery){
             // TODO:// 抽中奖品后的逻辑 DelayTask
             // 如果抽中则进行以下操作
             // 1. 存储抽奖记录
@@ -201,7 +194,35 @@ public class ZnqServiceImpl implements IZnqService {
     }
 
 
+
+
     // ------------------------- the base is all private methods -----------------------
+    // 更新某粉丝在某直播间的已抽奖次数
+    private boolean updateFanLotteryCountInRoom(Long masterId, Long targetMasterId, ZnqRoomInfoVO.Info info){
+        // update self, so no need a lock
+        final int drawn = info.getDrawn();
+        if (drawn == 0){
+            log.warn("the master room havent completed any task");
+            return false;
+        }
+        final int lotteryCount = getFanLotteryCountInRoom(masterId, targetMasterId);
+        if (lotteryCount < drawn){
+            final String lotteryForRoomKey = ZnqKeyConfig.getFanLotteryForRoomKey(Long.toString(masterId), Long.toString(targetMasterId));
+            jedisUtils.set(lotteryForRoomKey, Integer.toString(lotteryCount + 1));
+            return true;
+        }
+        return false;
+    }
+
+    // 获取某粉丝在某直播间的已抽奖次数
+    private Integer getFanLotteryCountInRoom(Long masterId, Long targetMasterId){
+        final String lotteryForRoomKey = ZnqKeyConfig.getFanLotteryForRoomKey(Long.toString(masterId), Long.toString(targetMasterId));
+        final Boolean exists = jedisUtils.exists(lotteryForRoomKey);
+        if (!exists){
+            jedisUtils.set(lotteryForRoomKey, "0");
+        }
+        return Integer.parseInt(jedisUtils.get(lotteryForRoomKey));
+    }
 
     private boolean resolveIssuedAndGetPrizedInfo(Long prizeId){
         // TODO://lock prize

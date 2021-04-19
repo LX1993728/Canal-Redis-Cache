@@ -31,7 +31,10 @@ public class ZnqKeyConfig {
     // 每个奖池统一前缀 ZSET 结构
     private static final String PRIZE_ID_POOL_PREFIX = ZNQ_PREFIX + SPLIT_FLAG + "PRIZEIDPOOL";
 
-    //
+    // 某一粉丝当天在一个直播间的抽奖次数
+    private static final String FAN_LOTTERY_FOR_ROOM_PREFIX = ZNQ_PREFIX + SPLIT_FLAG + "FANLOTTERY";
+
+    // 统一的锁标识
     private static final String LOCKPREFIX = ZNQ_PREFIX + SPLIT_FLAG + "LOCK";
 
     /**
@@ -64,15 +67,6 @@ public class ZnqKeyConfig {
     }
 
     /**
-     * 抽奖时使用
-     * @param targetMasterId
-     * @return
-     */
-    public static String getLockLotteryRoomInfoKey(String targetMasterId){
-        return String.format("%s%s%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "LOPTTERYROOMINFO", SPLIT_FLAG, targetMasterId, SPLIT_FLAG, getCurrentDate());
-    }
-
-    /**
      * 创建修改更新room info时使用
      * @param targetMasterId
      * @return
@@ -88,6 +82,16 @@ public class ZnqKeyConfig {
      */
     public static String getLockUpdatePrizeInfoKey(String prizeId){
         return String.format("%s%s%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "UPDATEPRIZEINFO", SPLIT_FLAG, prizeId, SPLIT_FLAG, getCurrentDate());
+    }
+
+    /**
+     *
+     * @param masterId fan masterId
+     * @param targetMasterId
+     * @return
+     */
+    public static String getFanLotteryForRoomKey(String masterId, String targetMasterId){
+        return String.format("%s%s%s%s%s%s%s", FAN_LOTTERY_FOR_ROOM_PREFIX, SPLIT_FLAG,masterId, SPLIT_FLAG, targetMasterId,SPLIT_FLAG, getCurrentDate());
     }
 
 
