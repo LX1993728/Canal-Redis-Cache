@@ -7,10 +7,7 @@ import com.redis.lottery.domains.ZnqPrize;
 import com.redis.lottery.service.IZnqService;
 import com.redis.lottery.utils.DateUtils;
 import com.redis.lottery.utils.JedisUtils;
-import com.redis.lottery.vo.ZnqLotteryVO;
-import com.redis.lottery.vo.ZnqPrizeItemVO;
-import com.redis.lottery.vo.ZnqPrizeVO;
-import com.redis.lottery.vo.ZnqRoomInfoVO;
+import com.redis.lottery.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -230,6 +227,20 @@ public class ZnqServiceImpl implements IZnqService {
 
         // end TODO://lock prize
         return result;
+    }
+
+    /**
+     * 获取
+     * @param isReset 是否重新设置并获取
+     * @return
+     */
+    private ZnqTaskConfigVO getTaskConfig(boolean isReset){
+        if (isReset){
+            // TODO:// 直接从数据库查询出来 封装VO 传输到redis
+        }else {
+            // TODO:// 判断redis是否存在对应的配置内容 KV ， 如果存在则直接获取JSON-VO return 否则则从数据库查询传输VO到redis return VO
+        }
+        return null;
     }
 
     private void setPrizeInfoFromPrizeEntity(ZnqPrize zp){
