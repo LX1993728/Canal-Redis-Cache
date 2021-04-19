@@ -1,10 +1,11 @@
 package com.redis.lottery.constants;
 
-import com.redis.lottery.utils.DateUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,7 +40,7 @@ public class ZnqKeyConfig {
      * @return
      */
     public static String getLiveRoomInfoKey(String targetMasterId){
-        return ROOM_INFO_PREFIX + SPLIT_FLAG + targetMasterId + SPLIT_FLAG + DateUtils.getCurrentDate();
+        return ROOM_INFO_PREFIX + SPLIT_FLAG + targetMasterId + SPLIT_FLAG + getCurrentDate();
     }
 
     /**
@@ -48,7 +49,7 @@ public class ZnqKeyConfig {
      * @return
      */
     public static String getPrizeInfoKey(String prizeId){
-        return PRIZE_INFO_PREFIX + SPLIT_FLAG + prizeId + SPLIT_FLAG + DateUtils.getCurrentDate();
+        return PRIZE_INFO_PREFIX + SPLIT_FLAG + prizeId + SPLIT_FLAG + getCurrentDate();
     }
 
 
@@ -59,7 +60,7 @@ public class ZnqKeyConfig {
      */
     public static String getPrizeIdPoolKey(int type){
         Assert.isTrue(type >= 1 && type <= 3, "the znq task type must in [1,3] !!!");
-        return String.format("%s%s%s%s%s", PRIZE_ID_POOL_PREFIX, SPLIT_FLAG,type,SPLIT_FLAG,DateUtils.getCurrentDate());
+        return String.format("%s%s%s%s%s", PRIZE_ID_POOL_PREFIX, SPLIT_FLAG,type,SPLIT_FLAG, getCurrentDate());
     }
 
     /**
@@ -68,7 +69,7 @@ public class ZnqKeyConfig {
      * @return
      */
     public static String getLockLotteryRoomInfoKey(String targetMasterId){
-        return String.format("%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "LOPTTERYROOMINFO", SPLIT_FLAG, targetMasterId);
+        return String.format("%s%s%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "LOPTTERYROOMINFO", SPLIT_FLAG, targetMasterId, SPLIT_FLAG, getCurrentDate());
     }
 
     /**
@@ -77,7 +78,7 @@ public class ZnqKeyConfig {
      * @return
      */
     public static String getLockUpdateRoomInfoKey(String targetMasterId){
-        return String.format("%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "UPDATEROOMINFO", SPLIT_FLAG, targetMasterId);
+        return String.format("%s%s%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "UPDATEROOMINFO", SPLIT_FLAG, targetMasterId, SPLIT_FLAG, getCurrentDate());
     }
 
     /**
@@ -86,9 +87,17 @@ public class ZnqKeyConfig {
      * @return
      */
     public static String getLockUpdatePrizeInfoKey(String prizeId){
-        return String.format("%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "UPDATEPRIZEINFO", SPLIT_FLAG, prizeId);
+        return String.format("%s%s%s%s%s%s%s", LOCKPREFIX,SPLIT_FLAG, "UPDATEPRIZEINFO", SPLIT_FLAG, prizeId, SPLIT_FLAG, getCurrentDate());
     }
 
 
+    /**
+     * 获取当前的日期（19000101）
+     * @return
+     */
+    private static int getCurrentDate() {
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+        return Integer.parseInt(df.format(new Date()));
+    }
 
 }
