@@ -2,6 +2,7 @@ package com.redis.lottery.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.redis.lottery.constants.ZnqRedisKeyConfig;
+import com.redis.lottery.constants.ZnqRoomAction;
 import com.redis.lottery.domains.ZnqPrize;
 import com.redis.lottery.service.IZnqService;
 import com.redis.lottery.utils.DateUtils;
@@ -103,7 +104,7 @@ public class ZnqServiceImpl implements IZnqService {
     }
 
     @Override
-    public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId, boolean setRedis, UpdateRoomAction<ZnqRoomInfoVO> action) {
+    public ZnqRoomInfoVO resolveAndGetRoomInfo(Long targetMasterId, boolean setRedis, ZnqRoomAction<ZnqRoomInfoVO> action) {
         // TODO://update room lock
         Assert.notNull(targetMasterId, "targetid must not be mull !!!");
         final String roomInfoKey = ZnqRedisKeyConfig.getLiveRoomInfoKey(Long.toString(targetMasterId));
@@ -272,12 +273,6 @@ public class ZnqServiceImpl implements IZnqService {
             }
         }
         return typesSet;
-    }
-
-    // ------------------------- the base is all public interface -----------------------
-
-    public interface UpdateRoomAction<T>{
-        T action(ZnqRoomInfoVO roomInfoVO, String key);
     }
 
 }
