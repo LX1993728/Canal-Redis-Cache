@@ -31,6 +31,12 @@ public class ZnqRoomInfoVO {
         private int drawn; // 已经开奖次数
         private int type; // 当前直播间已经进入的阶段
         private boolean isCompleted; // 该直播将当前的任务是否完成
+
+        int firstCharmCount;
+        int firstSharedCount;
+        int firstBarrageCount;
+        int secondCakeCount;
+        int thirdCharmCount;
     }
 
     // 获取分析结果
@@ -50,7 +56,7 @@ public class ZnqRoomInfoVO {
         int secondCakeCount = Math.min(secondCakes, stCakes);
         int thirdCharmCount = Math.min(thirdCharms, ttCharms);
 
-        Info info = new Info(0, 1, false);
+        Info info = new Info(0, 1,false, firstCharmCount, firstSharedCount, firstBarrageCount, secondCakeCount,thirdCharmCount);
         // 第一阶段 未完成 不可抽奖
         if (firstCharmCount < ftCharms || firstSharedCount < ftShared || firstBarrageCount < ftBarrs){
             return info;
