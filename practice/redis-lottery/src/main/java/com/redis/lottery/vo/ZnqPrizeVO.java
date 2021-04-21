@@ -18,5 +18,5 @@ public class ZnqPrizeVO {
     // 已经发放的数量
     private Integer issued;
     private Integer broad;
-    private String types;
+    private Integer type;
 }

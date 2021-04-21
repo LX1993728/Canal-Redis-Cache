@@ -64,14 +64,13 @@ public class ZnqServiceImpl implements IZnqService {
         for (ZnqPrize zp : znqPrizes){
             log.debug("{}-{}-{}", zp.getId(), zp.getName(), zp.getProbability());
             setPrizeInfoFromPrizeEntity(zp);
-            final Set<Integer> types = getTypesFromStr(zp.getTypes());
-            if (types.contains(1)){
+            if (zp.getType().equals(1)){
                 jedisUtils.action(jedis -> jedis.zadd(prizeIdPool1key, zp.getProbability(), Long.toString(zp.getId())));
             }
-            if (types.contains(2)){
+            if (zp.getType().equals(2)){
                 jedisUtils.action(jedis -> jedis.zadd(prizeIdPool2key, zp.getProbability(), Long.toString(zp.getId())));
             }
-            if (types.contains(3)){
+            if (zp.getType().equals(3)){
                 jedisUtils.action(jedis -> jedis.zadd(prizeIdPool3key, zp.getProbability(), Long.toString(zp.getId())));
             }
         }
@@ -94,7 +93,7 @@ public class ZnqServiceImpl implements IZnqService {
             prizeVO.setProbability(Double.parseDouble(map.get("probability")));
             prizeVO.setTotal(Integer.parseInt(map.get("total")));
             prizeVO.setIssued(Integer.parseInt(map.get("issued")));
-            prizeVO.setTypes(map.get("types"));
+            prizeVO.setType(Integer.parseInt(map.get("types")));
             return prizeVO;
         }
         return null;
@@ -136,8 +135,14 @@ public class ZnqServiceImpl implements IZnqService {
         final ZnqRoomInfoVO roomInfoVO = resolveAndGetRoomInfo(targetMasterId, false, (roomInfoVO1, key) -> roomInfoVO1);
         final ZnqTaskConfigVO taskConfig = getTaskConfig(false);
         final ZnqRoomInfoVO.Info info = roomInfoVO.acquireInfoResult(taskConfig);
-       if (info.getDrawn() != 0){
-            log.warn("不允许抽奖(任务未完成或已经抽完)");
+
+        if (info.getDrawn() == 0){
+            log.warn("不允许抽奖(该直播间未完成任何任务)");
+            return null;
+        }
+        final Integer lotteryCount = getFanLotteryCountInRoom(masterId, targetMasterId);
+        if (lotteryCount == info.getDrawn()){
+            log.warn("您的抽奖次数已达上限");
             return null;
         }
         String prizeIdPoolKey = ZnqKeyConfig.getPrizeIdPoolKey(info.getType());
@@ -266,7 +271,7 @@ public class ZnqServiceImpl implements IZnqService {
 
     private void setPrizeInfoFromPrizeEntity(ZnqPrize zp){
         final String prizeInfoKey = ZnqKeyConfig.getPrizeInfoKey(Long.toString(zp.getId()));
-        final ZnqPrizeVO prizeVO = new ZnqPrizeVO(zp.getId(), zp.getName(), zp.getProbability(), zp.getTotal(), 0, zp.getBroad(), zp.getTypes());
+        final ZnqPrizeVO prizeVO = new ZnqPrizeVO(zp.getId(), zp.getName(), zp.getProbability(), zp.getTotal(), 0, zp.getBroad(), zp.getType());
         Map<String, String> prizeVoMap = new HashMap<>();
         if (prizeVO.getId() != null){
             prizeVoMap.put("id", Long.toString(prizeVO.getId()));
@@ -286,8 +291,8 @@ public class ZnqServiceImpl implements IZnqService {
         if (prizeVO.getIssued() != null){
             prizeVoMap.put("issued", Integer.toString(prizeVO.getIssued()));
         }
-        if (prizeVO.getTypes() != null){
-            prizeVoMap.put("types", prizeVO.getTypes());
+        if (prizeVO.getType() != null){
+            prizeVoMap.put("types", Integer.toString(prizeVO.getType()));
         }
         String result = jedisUtils.hmSet(prizeInfoKey, prizeVoMap);
         log.info(result);

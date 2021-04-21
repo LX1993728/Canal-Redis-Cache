@@ -42,6 +42,6 @@ public class ZnqPrize {
     // 星钻数量(谢谢参与:-2 IPAD: -1,牡丹特效:0, 星钻:大于0 )
     private Integer starDiamonds;
 
-    //types：奖品类型数组 1,2,3 最多3项 (1-基础作战,2-进阶作战,3-彩蛋)
-    private String types;
+    //type 奖品类型 (1-基础作战,2-进阶作战,3-彩蛋)
+    private Integer type;
 }
