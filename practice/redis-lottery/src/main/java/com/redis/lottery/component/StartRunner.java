@@ -43,32 +43,30 @@ public class StartRunner implements ApplicationRunner {
         Master master5 = new Master(null,2L,"宋七");
         Master master6 = new Master(null,2L,"钱八");
 
+        // 创建奖品实例
+        ZnqPrize znqPrize1 = new ZnqPrize(null, "iPad", "特等奖", "http://imagexxx", 1, 1, 0.003d, -1, "3");
+        ZnqPrize znqPrize2 = new ZnqPrize(null, "10000星钻", "一等奖", "http://imagexxx", 1, 6, 0.01d, 10000, "1,2,3");
+        ZnqPrize znqPrize3 = new ZnqPrize(null, "100星钻", "二等奖", "http://imagexxx", 0, 1000, 2d, 100, "1,2,3");
+        ZnqPrize znqPrize4 = new ZnqPrize(null, "限定入场特效\"焦骨牡丹\" (7天)", "三等奖", "http://imagexxx", 0, 2000, 4d, 0, "1,2,3");
+        ZnqPrize znqPrize5 = new ZnqPrize(null, "5星钻", "四等奖", "http://imagexxx", 0, 5000, 10d, 5, "1,2,3");
+        ZnqPrize znqPrize6 = new ZnqPrize(null, "2星钻", "五等奖", "http://imagexxx", 0, 20000, 40d, 2, "1,2,3");
+        ZnqPrize znqPrize7 = new ZnqPrize(null, "谢谢参与", "其他", "http://imagexxx", 0, 10000000, 43.99d, -2, "1,2,3");
+
+
         entityManager.persist(master1);
         entityManager.persist(master2);
         entityManager.persist(master3);
         entityManager.persist(master4);
         entityManager.persist(master5);
         entityManager.persist(master6);
-
-        // 创建奖品实例
-        ZnqPrize znqPrize1 = new ZnqPrize(null, "iPad", "特等奖", "http://imagexxx", 1, 1, 0.003d, -1, 3);
-        ZnqPrize znqPrize2 = new ZnqPrize(null, "10000星钻", "一等奖", "http://imagexxx", 1, 6, 0.01d, 10000, 1);
-        ZnqPrize znqPrize2_1 = new ZnqPrize(null, "10000星钻", "一等奖", "http://imagexxx", 1, 6, 0.01d, 10000, 2);
         entityManager.persist(znqPrize1);
         entityManager.persist(znqPrize2);
-        entityManager.persist(znqPrize2_1);
-        for (int i= 1 ; i<=3; i++){
-            ZnqPrize znqPrize3 = new ZnqPrize(null, "100星钻", "二等奖", "http://imagexxx", 0, 1000, 2d, 100, i);
-            ZnqPrize znqPrize4 = new ZnqPrize(null, "限定入场特效\"焦骨牡丹\" (7天)", "三等奖", "http://imagexxx", 0, 2000, 4d, 0, i);
-            ZnqPrize znqPrize5 = new ZnqPrize(null, "5星钻", "四等奖", "http://imagexxx", 0, 5000, 10d, 5, i);
-            ZnqPrize znqPrize6 = new ZnqPrize(null, "2星钻", "五等奖", "http://imagexxx", 0, 20000, 40d, 2, i);
-            ZnqPrize znqPrize7 = new ZnqPrize(null, "谢谢参与", "其他", "http://imagexxx", 0, 10000000, 43.99d, -2, i);
-            entityManager.persist(znqPrize3);
-            entityManager.persist(znqPrize4);
-            entityManager.persist(znqPrize5);
-            entityManager.persist(znqPrize6);
-            entityManager.persist(znqPrize7);
-        }
+        entityManager.persist(znqPrize3);
+        entityManager.persist(znqPrize4);
+        entityManager.persist(znqPrize5);
+        entityManager.persist(znqPrize6);
+        entityManager.persist(znqPrize7);
+
         log.info("表数据实例化完毕......");
     }
 }
