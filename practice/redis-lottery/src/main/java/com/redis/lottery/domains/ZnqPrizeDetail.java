@@ -56,4 +56,8 @@ public class ZnqPrizeDetail {
     //allow_edit: 是否允许编辑
     @Column(name = "allow_edit")
     private Integer allowEdit;
+
+    // 编辑的备注信息
+    @Column(name = "edit_info")
+    private String editInfo;
 }

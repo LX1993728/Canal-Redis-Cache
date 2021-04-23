@@ -44,4 +44,8 @@ public class ZnqPrize {
 
     //types：奖品类型数组 1,2,3 最多3项 (1-基础作战,2-进阶作战,3-彩蛋)
     private String types;
+
+    // 剩余数量
+    @Transient
+    private Integer remaining = -1;
 }

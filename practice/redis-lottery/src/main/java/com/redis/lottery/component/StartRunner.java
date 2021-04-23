@@ -44,13 +44,15 @@ public class StartRunner implements ApplicationRunner {
         Master master6 = new Master(null,2L,"钱八");
 
         // 创建奖品实例
-        ZnqPrize znqPrize1 = new ZnqPrize(null, "iPad", "特等奖", "http://imagexxx", 1, 1, 0.003d, -1, "3");
-        ZnqPrize znqPrize2 = new ZnqPrize(null, "10000星钻", "一等奖", "http://imagexxx", 1, 6, 0.01d, 10000, "1,2,3");
-        ZnqPrize znqPrize3 = new ZnqPrize(null, "100星钻", "二等奖", "http://imagexxx", 0, 1000, 2d, 100, "1,2,3");
-        ZnqPrize znqPrize4 = new ZnqPrize(null, "限定入场特效\"焦骨牡丹\" (7天)", "三等奖", "http://imagexxx", 0, 2000, 4d, 0, "1,2,3");
-        ZnqPrize znqPrize5 = new ZnqPrize(null, "5星钻", "四等奖", "http://imagexxx", 0, 5000, 10d, 5, "1,2,3");
-        ZnqPrize znqPrize6 = new ZnqPrize(null, "2星钻", "五等奖", "http://imagexxx", 0, 20000, 40d, 2, "1,2,3");
-        ZnqPrize znqPrize7 = new ZnqPrize(null, "谢谢参与", "其他", "http://imagexxx", 0, 10000000, 43.99d, -2, "1,2,3");
+        ZnqPrize znqPrize1 = new ZnqPrize(null, "iPad", "特等奖", "http://imagexxx", 1, 1, 0.003d, -1, "3", null);
+        ZnqPrize znqPrize2 = new ZnqPrize(null, "10000星钻", "一等奖", "http://imagexxx", 1, 6, 0.01d, 10000, "1,2,3", null);
+        ZnqPrize znqPrize3 = new ZnqPrize(null, "100星钻", "二等奖", "http://imagexxx", 0, 1000, 2d, 100, "1,2,3", null);
+        ZnqPrize znqPrize4 = new ZnqPrize(null, "限定入场特效\"焦骨牡丹\" (7天)", "三等奖", "http://imagexxx", 0, 2000, 4d, 0, "1,2,3", null);
+        ZnqPrize znqPrize5 = new ZnqPrize(null, "5星钻", "四等奖", "http://imagexxx", 0, 5000, 10d, 5, "1,2,3", null);
+        ZnqPrize znqPrize6 = new ZnqPrize(null, "2星钻", "五等奖", "http://imagexxx", 0, 20000, 40d, 2, "1,2,3", null);
+        ZnqPrize znqPrize7 = new ZnqPrize(null, "谢谢参与", "其他", "http://imagexxx", 0, 10000000, 43.99d, -2, "1,2,3",null);
+        ZnqPrize znqPrize8 = new ZnqPrize(null, "谢谢参与", "其他", "http://imagexxx", 0, 10000000, 43.99d, -2, "1,2,3",null);
+        ZnqPrize znqPrize9 = new ZnqPrize(null, "谢谢参与", "其他", "http://imagexxx", 0, 10000000, 43.99d, -2, "1,2,3",null);
 
 
         entityManager.persist(master1);
