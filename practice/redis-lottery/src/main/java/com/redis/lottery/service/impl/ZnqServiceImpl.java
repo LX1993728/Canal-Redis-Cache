@@ -194,7 +194,23 @@ public class ZnqServiceImpl implements IZnqService {
     }
 
 
-
+    @Override
+    public List<ZnqPrize> getAndMonitorPrizes(){
+        String hql = "select zp from ZnqPrize zp where zp.starDiamonds <> -2 order by zp.probability asc";
+        final List<ZnqPrize> znqPrizes = entityManager.createQuery(hql,ZnqPrize.class).getResultList();
+        for (ZnqPrize zp : znqPrizes){
+            final String prizeInfoKey = ZnqKeyConfig.getPrizeInfoKey(Long.toString(zp.getId()));
+            final boolean exists = jedisUtils.exists(prizeInfoKey);
+            if (!exists){
+                zp.setRemaining(-1);
+            }else {
+                int total = Integer.parseInt(jedisUtils.hGet(prizeInfoKey, "total"));
+                int issued = Integer.parseInt(jedisUtils.hGet(prizeInfoKey, "issued"));
+                zp.setRemaining(total - issued);
+            }
+        }
+        return znqPrizes;
+    }
 
     // ------------------------- the base is all private methods -----------------------
     // 更新某粉丝在某直播间的已抽奖次数
