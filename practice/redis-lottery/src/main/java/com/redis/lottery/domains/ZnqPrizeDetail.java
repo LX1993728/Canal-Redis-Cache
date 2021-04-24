@@ -60,4 +60,7 @@ public class ZnqPrizeDetail {
     // 编辑的备注信息
     @Column(name = "edit_info")
     private String editInfo;
+
+    @Column(name = "has_drawn")
+    private Integer hasDrawn;
 }

@@ -49,6 +49,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- quartz -->
+        <dependency>
+            <groupId>org.quartz</groupId>
+            <artifactId>quartz</artifactId>
+            <version>1.6.6</version>
+        </dependency>
+
         <!--   常用的工具包    -->
         <dependency>
             <groupId>com.alibaba</groupId>
