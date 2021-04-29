@@ -2,6 +2,7 @@ package com.redis.lottery.component;
 
 import com.redis.lottery.domains.Master;
 import com.redis.lottery.domains.ZnqPrize;
+import com.redis.lottery.domains.ZnqPrizeDetail;
 import com.redis.lottery.service.IZnqService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -68,7 +70,11 @@ public class StartRunner implements ApplicationRunner {
         entityManager.persist(znqPrize5);
         entityManager.persist(znqPrize6);
         entityManager.persist(znqPrize7);
+        entityManager.persist(znqPrize8);
+        entityManager.persist(znqPrize9);
 
+        final ZnqPrizeDetail detail = new ZnqPrizeDetail(null, 105L, 1L, 206L, 1L, new Date(2021, 5, 20), 20210520, 0, 1, 0, "xxx", 3, 1, null, 0);
+        entityManager.persist(detail);
         log.info("表数据实例化完毕......");
     }
 }
