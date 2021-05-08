@@ -47,10 +47,17 @@ public class TestController {
             String[] names = new String[]{"张三", "李四", "王五", "赵六", "送七", "AAA", "BBB", "CCC", "DDD"};
             jedisUtils.action(jedis -> jedis.sadd(key2, names));
         }
+        final Long aLong = jedisUtils.del("XXXXXXXXXXXXXXXX");
+        final Long yyyyyyyyyy = jedisUtils.action(jedis -> jedis.scard("YYYYYYYYYY"));
+        final Boolean sisMember = jedisUtils.action(jedis -> jedis.sismember("YYYYYYYYYY", "aaa"));
+        log.info("++++++{}+++++++", aLong);
         final List<String> randomVals = jedisUtils.action(jedis -> jedis.srandmember(key2, 2));
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(key, incr);
+        resultMap.put(key + "_Str", jedisUtils.get(key));
         resultMap.put(key2, randomVals);
+        resultMap.put("notExistsScardCount", yyyyyyyyyy);
+        resultMap.put("sisMember", sisMember);
         return resultMap;
     }
 }
