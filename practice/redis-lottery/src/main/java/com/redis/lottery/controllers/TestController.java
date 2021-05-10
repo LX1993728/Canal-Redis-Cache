@@ -1,11 +1,14 @@
 package com.redis.lottery.controllers;
 
+import com.redis.lottery.constants.ZnqKeyConfig;
 import com.redis.lottery.domains.ZnqPrize;
 import com.redis.lottery.service.IZnqService;
 import com.redis.lottery.utils.JedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityManager;
@@ -60,4 +63,18 @@ public class TestController {
         resultMap.put("sisMember", sisMember);
         return resultMap;
     }
+    // 测试Jedis hincrBy 是否可以使用负值递减 结论:可以
+    @GetMapping("/testHdecry")
+    public Object testHdecry(@RequestParam(name = "crement", defaultValue = "1")Long crement,
+                             @RequestParam(name = "prizeId", defaultValue = "2")Long prizeId){
+        final String prizeInfoKey = ZnqKeyConfig.getPrizeInfoKey(Long.toString(prizeId));
+        final Long issued = jedisUtils.action(jedis -> jedis.hincrBy(prizeInfoKey, "issued", crement));
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("prizeId", prizeId);
+        resultMap.put("issued", issued);
+        resultMap.put("crement", crement);
+        return resultMap;
+    }
+
+
 }
