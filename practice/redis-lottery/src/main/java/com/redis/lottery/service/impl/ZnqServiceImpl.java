@@ -241,16 +241,18 @@ public class ZnqServiceImpl implements IZnqService {
     }
 
     private boolean resolveIssuedAndGetPrizedInfo(Long prizeId){
-        // TODO://lock prize
+        // 使用incr 以及hincrBy去锁
         final String prizeInfoKey = ZnqKeyConfig.getPrizeInfoKey(Long.toString(prizeId));
         final Boolean exists = jedisUtils.exists(prizeInfoKey);
         Assert.isTrue(exists, "not exist prizeInfo !!!");
-        boolean result;
+        boolean result = false;
         int total = Integer.parseInt(jedisUtils.hGet(prizeInfoKey, "totol"));
         int issued = Integer.parseInt(jedisUtils.hGet(prizeInfoKey, "issued"));
         if (issued < total){
-            jedisUtils.hSet(prizeInfoKey, "issued", Integer.toString(issued + 1));
-            result = true;
+            final Long issuedNew = jedisUtils.action(jedis -> jedis.hincrBy(prizeInfoKey, "issued", 1L));
+            if (issuedNew <= total){
+                result = true;
+            }
         }else {
             // remove prize from pool
             String pool1Key = ZnqKeyConfig.getPrizeIdPoolKey(1);
@@ -262,7 +264,6 @@ public class ZnqServiceImpl implements IZnqService {
             result =  false;
         }
 
-        // end TODO://lock prize
         return result;
     }
 
