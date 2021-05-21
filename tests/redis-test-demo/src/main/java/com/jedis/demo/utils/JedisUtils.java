@@ -1,10 +1,15 @@
 package com.jedis.demo.utils;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,10 +21,10 @@ public class JedisUtils {
         jedisPool();
     }
 
-    private static JedisPool jedisPool(){
-        if (jedisPool == null || jedisPool.isClosed()){
-            synchronized (JedisUtils.class){
-                if (jedisPool == null || jedisPool.isClosed()){
+    private static JedisPool jedisPool() {
+        if (jedisPool == null || jedisPool.isClosed()) {
+            synchronized (JedisUtils.class) {
+                if (jedisPool == null || jedisPool.isClosed()) {
                     JedisPoolConfig config = new JedisPoolConfig();
                     config.setMaxIdle(8);
                     config.setMaxWaitMillis(8);
@@ -217,7 +222,7 @@ public class JedisUtils {
     /**
      * 封装一部分重复操作，使jedis操作更简便
      */
-    public static  <T> T action(RedisAction<T> action) {
+    public static <T> T action(RedisAction<T> action) {
         Jedis jedis = jedisPool.getResource();
         config(jedis);
         T v = action.action(jedis);
@@ -225,7 +230,7 @@ public class JedisUtils {
         return v;
     }
 
-    public static  void voidAction(RedisVAction action) {
+    public static void voidAction(RedisVAction action) {
         Jedis jedis = jedisPool.getResource();
         config(jedis);
         action.action(jedis);
@@ -240,12 +245,106 @@ public class JedisUtils {
         void action(Jedis jedis);
     }
 
-    private static void config(Jedis jedis){
+    private static void config(Jedis jedis) {
         String parameter = "notify-keyspace-events";
         List<String> notify = jedis.configGet(parameter);
-        if(notify.get(1).equals("")){
+        if (notify.get(1).equals("")) {
             jedis.configSet(parameter, "Ex"); //过期事件
         }
     }
-}
 
+    //-----------------  Map <--> bean <--> Hash 之间的转换 --------------------------
+
+    /**
+     * 对象转Map
+     * @param obj
+     * @return
+     */
+    public static Map<String, Object> obj2OBJMap(Object obj) {
+        JSON.DEFFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+        return JSON.parseObject(JSON.toJSONString(obj, SerializerFeature.WriteDateUseDateFormat));
+    }
+
+    public static Map<String, String> obj2STRMap(Object obj) {
+        assert obj != null;
+        Map<String, Object> soMap = obj2OBJMap(obj);
+        Map<String, String> resultMap = new HashMap<>();
+        for (Map.Entry<String, Object> entry : soMap.entrySet()){
+            String fieldName = entry.getKey();
+            Object fieldValue = entry.getValue();
+            if ((fieldValue instanceof String ||
+                    fieldValue instanceof Number ||
+                    fieldValue instanceof Boolean)){
+                resultMap.put(fieldName, fieldValue.toString());
+            }
+        }
+        return resultMap;
+    }
+
+    /**
+     * 将对象转为Hash 存储到redis中
+     * @param obj
+     * @param key
+     * @return
+     */
+    public static Map<String, String> hmsetResetObj(Object obj, String key){
+        assert StringUtils.isNotBlank(key);
+        final Map<String, String> strMap = obj2STRMap(obj);
+        if (!strMap.isEmpty()){
+            JedisUtils.action(jedis -> jedis.hmset(key, strMap));
+        }
+        return strMap;
+    }
+
+    public static Map<String, String> hmsetUpdateObj(Object obj, String key){
+        assert StringUtils.isNotBlank(key);
+        final Map<String, String> strMap = obj2STRMap(obj);
+        if (!strMap.isEmpty()){
+            for (Map.Entry<String, String> entry : strMap.entrySet()){
+                String fieldName = entry.getKey();
+                String fieldValue = entry.getValue();
+                JedisUtils.action(jedis -> jedis.hset(key, fieldName, fieldValue));
+            }
+        }
+        return strMap;
+    }
+    public static Long hincrByObjField(Class clazz, String key, String fieldName, long incrValue, long maxValue ){
+        assert clazz != null;
+        assert  StringUtils.isNotBlank(key) && StringUtils.isNotBlank(fieldName);
+        boolean  isFieldNameValied = false;
+        try {
+            final Field field = clazz.getDeclaredField(fieldName);
+            isFieldNameValied = true;
+        } catch (NoSuchFieldException ignored) {
+        }
+        assert isFieldNameValied;
+
+        Long operateValue = JedisUtils.action(jedis -> jedis.hincrBy(key, fieldName, incrValue));
+        if (operateValue > maxValue){
+            operateValue = JedisUtils.action(jedis -> jedis.hset(key, fieldName, String.valueOf(maxValue)));
+        }
+
+        return operateValue;
+    }
+
+    public static Long hdecrByObjField(Class clazz, String key, String fieldName, long decrValue, long minValue ){
+        assert clazz != null;
+        assert  StringUtils.isNotBlank(key) && StringUtils.isNotBlank(fieldName);
+        boolean  isFieldNameValied = false;
+        try {
+            final Field field = clazz.getDeclaredField(fieldName);
+            isFieldNameValied = true;
+        } catch (NoSuchFieldException ignored) {
+        }
+        assert isFieldNameValied;
+
+        decrValue = -Math.abs(decrValue);
+        long finalDecrValue = decrValue;
+        Long operateValue = JedisUtils.action(jedis -> jedis.hincrBy(key, fieldName, finalDecrValue));
+        if (operateValue < minValue){
+            operateValue = JedisUtils.action(jedis -> jedis.hset(key, fieldName, String.valueOf(finalDecrValue)));
+        }
+        return operateValue;
+    }
+
+}
