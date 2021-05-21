@@ -219,6 +219,7 @@ public class JedisUtils {
      */
     public static  <T> T action(RedisAction<T> action) {
         Jedis jedis = jedisPool.getResource();
+        config(jedis);
         T v = action.action(jedis);
         jedis.close();
         return v;
