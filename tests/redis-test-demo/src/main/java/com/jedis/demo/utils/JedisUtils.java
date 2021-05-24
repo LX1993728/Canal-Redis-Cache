@@ -31,7 +31,6 @@ public class JedisUtils {
                     config.setMaxTotal(-1);
                     config.setMinIdle(0);
                     jedisPool = new JedisPool(config, "127.0.0.1", 6379, 0, null);
-                    log.info("jedis pool init success......");
                 }
             }
         }
