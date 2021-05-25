@@ -2,6 +2,7 @@ package com.zoo.ninestar.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -9,10 +10,13 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Pattern;
 
+@Slf4j
 @Component
 public class JedisUtils {
     @Autowired
@@ -213,33 +217,7 @@ public class JedisUtils {
         T action(Jedis jedis);
     }
 
-    //-----------------  Map <--> bean <--> Hash 之间的转换 --------------------------
 
-    /**
-     * 对象转Map
-     * @param obj
-     * @return
-     */
-    public static Map<String, Object> obj2OBJMap(Object obj) {
-        JSON.DEFFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-        return JSON.parseObject(JSON.toJSONString(obj, SerializerFeature.WriteDateUseDateFormat));
-    }
-
-    public static Map<String, String> obj2STRMap(Object obj) {
-        assert obj != null;
-        Map<String, Object> soMap = obj2OBJMap(obj);
-        Map<String, String> resultMap = new HashMap<>();
-        for (Map.Entry<String, Object> entry : soMap.entrySet()){
-            String fieldName = entry.getKey();
-            Object fieldValue = entry.getValue();
-            if ((fieldValue instanceof String ||
-                    fieldValue instanceof Number ||
-                    fieldValue instanceof Boolean)){
-                resultMap.put(fieldName, fieldValue.toString());
-            }
-        }
-        return resultMap;
-    }
 
     /**
      * 将对象转为Hash 存储到redis中
@@ -247,11 +225,11 @@ public class JedisUtils {
      * @param key
      * @return
      */
-    public static Map<String, String> hmsetResetObj(Object obj, String key){
+    public Map<String, String> hmsetResetObj(Object obj, String key){
         assert StringUtils.isNotBlank(key);
-        final Map<String, String> strMap = obj2STRMap(obj);
+        final Map<String, String> strMap = MapObjUtils.obj2STRMap(obj);
         if (!strMap.isEmpty()){
-            new JedisUtils().action(jedis -> jedis.hmset(key, strMap));
+            action(jedis -> jedis.hmset(key, strMap));
         }
         return strMap;
     }
@@ -262,15 +240,15 @@ public class JedisUtils {
      * @param key
      * @return
      */
-    public static Map<String, String> hmsetUpdateObj(Object obj, String key){
+    public Map<String, String> hmsetUpdateObj(Object obj, String key){
         assert StringUtils.isNotBlank(key);
-        final Map<String, String> strMap = obj2STRMap(obj);
+        final Map<String, String> strMap = MapObjUtils.obj2STRMap(obj);
         if (!strMap.isEmpty()){
             for (Map.Entry<String, String> entry : strMap.entrySet()){
                 String fieldName = entry.getKey();
                 String fieldValue = entry.getValue();
                 if (fieldValue != null){
-                    new JedisUtils().action(jedis -> jedis.hset(key, fieldName, fieldValue));
+                   action(jedis -> jedis.hset(key, fieldName, fieldValue));
                 }
             }
         }
@@ -286,7 +264,7 @@ public class JedisUtils {
      * @param maxValue
      * @return
      */
-    public static Long hincrByObjField(Class clazz, String key, String fieldName, long incrValue, long maxValue ){
+    public Long hincrByObjField(Class clazz, String key, String fieldName, long incrValue, long maxValue ){
         assert clazz != null;
         assert  StringUtils.isNotBlank(key) && StringUtils.isNotBlank(fieldName);
         boolean  isFieldNameValied = false;
@@ -297,9 +275,9 @@ public class JedisUtils {
         }
         assert isFieldNameValied;
 
-        Long operateValue = new JedisUtils().action(jedis -> jedis.hincrBy(key, fieldName, incrValue));
+        Long operateValue = action(jedis -> jedis.hincrBy(key, fieldName, incrValue));
         if (operateValue > maxValue){
-            operateValue = new JedisUtils().action(jedis -> jedis.hset(key, fieldName, String.valueOf(maxValue)));
+            operateValue = action(jedis -> jedis.hset(key, fieldName, String.valueOf(maxValue)));
         }
 
         return operateValue;
@@ -314,7 +292,7 @@ public class JedisUtils {
      * @param minValue
      * @return
      */
-    public static Long hdecrByObjField(Class clazz, String key, String fieldName, long decrValue, long minValue ){
+    public Long hdecrByObjField(Class clazz, String key, String fieldName, long decrValue, long minValue ){
         assert clazz != null;
         assert  StringUtils.isNotBlank(key) && StringUtils.isNotBlank(fieldName);
         boolean  isFieldNameValied = false;
@@ -327,13 +305,12 @@ public class JedisUtils {
 
         decrValue = -Math.abs(decrValue);
         long finalDecrValue = decrValue;
-        Long operateValue = new JedisUtils().action(jedis -> jedis.hincrBy(key, fieldName, finalDecrValue));
+        Long operateValue = action(jedis -> jedis.hincrBy(key, fieldName, finalDecrValue));
         if (operateValue < minValue){
-            operateValue = new JedisUtils().action(jedis -> jedis.hset(key, fieldName, String.valueOf(minValue)));
+            operateValue = action(jedis -> jedis.hset(key, fieldName, String.valueOf(minValue)));
         }
         return operateValue;
     }
-
 
 }
 

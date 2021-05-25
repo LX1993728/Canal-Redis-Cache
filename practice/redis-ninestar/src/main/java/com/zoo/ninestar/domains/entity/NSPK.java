@@ -1,4 +1,4 @@
-package com.zoo.ninestar.domains;
+package com.zoo.ninestar.domains.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +8,9 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.util.Date;
 
+/**
+ * 九星神器 PK赛记录表
+ */
 @Data
 @ToString
 @AllArgsConstructor
