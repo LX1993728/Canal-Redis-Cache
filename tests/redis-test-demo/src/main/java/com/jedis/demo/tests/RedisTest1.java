@@ -9,7 +9,7 @@ import org.junit.Test;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class Test1 {
+public class RedisTest1 {
 
     @Test
     public void test1() throws InterruptedException {

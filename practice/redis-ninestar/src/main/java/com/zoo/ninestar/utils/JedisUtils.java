@@ -274,6 +274,10 @@ public class JedisUtils {
         } catch (NoSuchFieldException ignored) {
         }
         assert isFieldNameValied;
+        final String oldValue = action(jedis -> jedis.hget(key, fieldName));
+        if (oldValue == null || Long.parseLong(oldValue) >= maxValue){
+            return -1L;
+        }
 
         Long operateValue = action(jedis -> jedis.hincrBy(key, fieldName, incrValue));
         if (operateValue > maxValue){
@@ -302,6 +306,10 @@ public class JedisUtils {
         } catch (NoSuchFieldException ignored) {
         }
         assert isFieldNameValied;
+        final String oldValue = action(jedis -> jedis.hget(key, fieldName));
+        if (oldValue == null || Long.parseLong(oldValue) <= minValue){
+            return -1L;
+        }
 
         decrValue = -Math.abs(decrValue);
         long finalDecrValue = decrValue;
