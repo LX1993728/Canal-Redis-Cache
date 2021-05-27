@@ -96,4 +96,12 @@ public class NSPKSkill {
     //  ref_skill_count: 表示关联技能的释放次数阈值(方可激活此技能)
     @Column(name = "ref_skill_count")
     private Integer refSkillCount;
+
+    // 剩余可执行次数 为null或-1表示没有次数限制
+    @Transient
+    private Integer remainTimes;
+
+    // 表示是否为激活状态
+    @Transient
+    private Boolean isActive;
 }

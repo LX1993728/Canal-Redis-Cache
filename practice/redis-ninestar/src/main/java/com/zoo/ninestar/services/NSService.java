@@ -1,6 +1,9 @@
 package com.zoo.ninestar.services;
 
+import com.zoo.ninestar.domains.entity.NSPK;
 import com.zoo.ninestar.domains.entity.NSPKSkill;
+import com.zoo.ninestar.domains.vo.NSResultVO;
+import com.zoo.ninestar.domains.vo.redis.NSConfigVO;
 
 import java.util.List;
 
@@ -22,4 +25,10 @@ public interface NSService {
      * @return
      */
     NSPKSkill getLoadSkill(Long skillId, boolean isLoad);
+
+    NSConfigVO getInitGlobalTotal();
+
+    NSResultVO<NSPK> invitePK();
+
+    NSResultVO<NSPK> startPK();
 }

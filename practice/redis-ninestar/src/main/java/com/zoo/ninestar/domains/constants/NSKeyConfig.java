@@ -17,13 +17,10 @@ public class NSKeyConfig {
     private static final String SKILL_PRE = NS_PRE + SPLIT_FLAG + "SKILL";
 
     @Getter
-    private static final String INIT_GLOBAL_TOTAL_KEY = NS_PRE + SPLIT_FLAG + "GLOBALTOTAL";
+    private static final String INIT_GLOBAL_CONFIG_KEY = NS_PRE + SPLIT_FLAG + "GLOBALCONFIG";
 
     private static final String PK_PRE = NS_PRE + SPLIT_FLAG + "PK";
 
-    // 初始化总血量
-    @Getter
-    private static final Integer initTotal = 30000;
 
     /**
      * 获取技能key

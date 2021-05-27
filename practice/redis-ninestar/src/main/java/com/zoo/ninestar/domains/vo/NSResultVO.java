@@ -12,7 +12,8 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class NSResultVO {
-    boolean isSuccess;
-    String description;
+public class NSResultVO<T> {
+    private boolean isSuccess;
+    private String description;
+    private T obj;
 }
