@@ -96,37 +96,6 @@ public class NSServiceImpl implements NSService {
     }
 
     @Override
-    public NSResultVO<NSPK> invitePK(){
-        //TODO:1 ——invitePK 5 step
-        final NSResultVO<NSPK> nsResultVO = new NSResultVO<>();
-        // step1: 检查当前主播 与对方主播是否处于连麦状态 && !主播当前是否正在开始或进行一场PK
-        // 满足 step1 ——> to step2:
-        // step2: 插入一条初始化状态的PK记录 status=0 && 同步PK记录同步到Redis
-        // step3: 初始化 Redis数据配置->[各个技能相关的NSSkillStatusVO、双方总血量的TotalVO]
-        // step4: 给双方分别发送消息通知 && 同时放入队列一个等待时间大小的延时任务
-                // step:4.1 延时任务用于检查PK记录的状态是否是已接受进行中的状态
-                    // if status == 0 给主播双方发送超时未接受的通知 并结束PK相关逻辑 else 不做处理
-        // step5: 返回包装NSPK相关的VO
-        return nsResultVO;
-    }
-
-    @Override
-    public NSResultVO<NSPK> startPK(){
-        //TODO:2—— startPK 5 step
-        final NSResultVO<NSPK> nsResultVO = new NSResultVO<>();
-        // step1: 检查当前主播与发起者主播是否处于连麦状态 && !主播当前是否正在开始或进行一场PK
-        // 满足 step1 ——> to step2:
-        // step2: 修改PK记录的状态 if 接受 status=1; if 拒绝 status=2 && 同步修改PK记录同步到Redis
-        // step3: if 接受 发送开始PK的通知到双方直播间 (包括各个技能的状态以及双方总血量等相关信息)
-                // step3.1: 获取配置中的PK最大时间，并根据时间创建延时任务放入队列
-                    // 该任务首先检查该PK是否结束?
-                    // 如果未结束，检查双方血量大小并更新PK记录的winner && 同时结束PK修改status=4并同步到redis && 最后发送PK结束的通知到双方直播间
-                    // 最后根据每个粉丝的贡献，分别给予对应的称号，再次发送通知到双方直播间
-        // step5: 返回包装NSPK相关的VO
-        return nsResultVO;
-    }
-
-    @Override
     public NSPK saveOrUpdateNsPK(NSPK nspk, boolean isReload){
         assert  nspk != null;
         if (nspk.getId() == null){
@@ -190,6 +159,37 @@ public class NSServiceImpl implements NSService {
             final NSPK skill = MapObjUtils.strMap2Obj(NSPK.class, map);
             return skill;
         }
+    }
+
+    @Override
+    public NSResultVO<NSPK> invitePK(){
+        //TODO:1 ——invitePK 5 step
+        final NSResultVO<NSPK> nsResultVO = new NSResultVO<>();
+        // step1: 检查当前主播 与对方主播是否处于连麦状态 && !主播当前是否正在开始或进行一场PK
+        // 满足 step1 ——> to step2:
+        // step2: 插入一条初始化状态的PK记录 status=0 && 同步PK记录同步到Redis
+        // step3: 初始化 Redis数据配置->[各个技能相关的NSSkillStatusVO、双方总血量的TotalVO]
+        // step4: 给双方分别发送消息通知 && 同时放入队列一个等待时间大小的延时任务
+        // step:4.1 延时任务用于检查PK记录的状态是否是已接受进行中的状态
+        // if status == 0 给主播双方发送超时未接受的通知 并结束PK相关逻辑 else 不做处理
+        // step5: 返回包装NSPK相关的VO
+        return nsResultVO;
+    }
+
+    @Override
+    public NSResultVO<NSPK> startPK(){
+        //TODO:2—— startPK 5 step
+        final NSResultVO<NSPK> nsResultVO = new NSResultVO<>();
+        // step1: 检查当前主播与发起者主播是否处于连麦状态 && !主播当前是否正在开始或进行一场PK
+        // 满足 step1 ——> to step2:
+        // step2: 修改PK记录的状态 if 接受 status=1; if 拒绝 status=2 && 同步修改PK记录同步到Redis
+        // step3: if 接受 发送开始PK的通知到双方直播间 (包括各个技能的状态以及双方总血量等相关信息)
+        // step3.1: 获取配置中的PK最大时间，并根据时间创建延时任务放入队列
+        // 该任务首先检查该PK是否结束?
+        // 如果未结束，检查双方血量大小并更新PK记录的winner && 同时结束PK修改status=4并同步到redis && 最后发送PK结束的通知到双方直播间
+        // 最后根据每个粉丝的贡献，分别给予对应的称号，再次发送通知到双方直播间
+        // step5: 返回包装NSPK相关的VO
+        return nsResultVO;
     }
 
     //TODO:3—— 封装获取各个技能且包含实时状态的getSkillStatuses()方法
