@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.Query;
+import org.hibernate.StatelessSession;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -121,5 +123,52 @@ public class MapObjUtils{
         } else {
             return value;
         }
+    }
+
+    public static final String dateFormat = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * 获取要更新实体字段的HQL
+     * @param id
+     * @param clazz
+     * @param paramMap
+     * @param <T>
+     * @return
+     * @throws Exception
+     */
+    public static  <T> String getUpdateEntityHql(Long id, Class<T> clazz, Map<String, Object> paramMap) throws Exception{
+        if (paramMap == null || paramMap.isEmpty()){
+            return null;
+        }
+        String entityName = clazz.getSimpleName();
+        StringBuilder builder = new StringBuilder();
+        builder.append(String.format("update %s set ", entityName));
+        boolean hasSet = false;
+        for (Map.Entry<String,Object> entry : paramMap.entrySet()){
+            String key = entry.getKey();
+            Object objVal = entry.getValue();
+            String value = null;
+            if (objVal instanceof String){
+                value = String.format("'%s'", objVal);
+            }else if (objVal instanceof Integer){
+                value = Integer.toString((Integer) objVal);
+            }else if (objVal instanceof Double){
+                value = Double.toString((Double) objVal);
+            }else if (objVal instanceof Date){
+                value = String.format("'%s'",  new SimpleDateFormat(dateFormat).format((Date) objVal));
+            }else {
+                log.error("暂不支持的field类型={}", objVal.getClass().getSimpleName());
+            }
+            if (StringUtils.isNotBlank(value)){
+                builder.append(String.format(" %s %s=%s ", hasSet?",":"", key, value));
+            }
+            if (!hasSet){
+                hasSet = true;
+            }
+        }
+        builder.append(String.format(" where id=%s", id));
+        String hqlStr = builder.toString();
+        log.info("更新表 hql={}", hqlStr);
+        return hqlStr;
     }
 }

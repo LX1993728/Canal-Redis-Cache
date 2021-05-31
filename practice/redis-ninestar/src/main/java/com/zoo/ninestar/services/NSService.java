@@ -31,4 +31,8 @@ public interface NSService {
     NSResultVO<NSPK> invitePK();
 
     NSResultVO<NSPK> startPK();
+
+    NSPK saveOrUpdateNsPK(NSPK nspk, boolean isReload);
+
+    NSPK getLoadNSPK(Long pkId, boolean isLoad);
 }

@@ -126,7 +126,72 @@ public class NSServiceImpl implements NSService {
         return nsResultVO;
     }
 
-    //TODO:3—— 封装POJO vs Redis Hash 同步存储/更新/重新载入 的相关方法
-    //TODO:4—— 封装获取各个技能且包含实时状态的getSkillStatuses()方法
-    //TODO:5—— 封装PK开始后, 使用对应技能的useSkill()方法
+    @Override
+    public NSPK saveOrUpdateNsPK(NSPK nspk, boolean isReload){
+        assert  nspk != null;
+        if (nspk.getId() == null){
+            log.info("------ insert NSPK={} -----", nspk);
+            entityManager.persist(nspk);
+            assert nspk.getId() != null;
+            final String pkRecordKey = NSKeyConfig.getPKRecordKey(nspk.getId());
+            if (jedisUtils.exists(pkRecordKey)){
+                jedisUtils.del(pkRecordKey);
+            }
+            if (isReload){
+                final Map<String, String> map = jedisUtils.hmsetResetObj(pkRecordKey, pkRecordKey);
+                log.info("---- insert nspk to redis map={}", map);
+            }
+            return nspk;
+        }else {
+            log.info("---- update nspk to db nspk={} -----", nspk);
+            final Long nspkId = nspk.getId();
+            Map<String, Object> map = MapObjUtils.obj2OBJMap(nspk);
+            map.remove("id");
+            try {
+                final String updateEntityHql = MapObjUtils.getUpdateEntityHql(nspkId, NSPK.class, map);
+                log.info("---- update nspk hql={} -----", updateEntityHql);
+                entityManager.createQuery(updateEntityHql).executeUpdate();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return null;
+            }
+            final NSPK nspkResult = entityManager.find(NSPK.class, nspkId);
+            assert nspkResult != null;
+            if (isReload){
+                final String pkRecordKey = NSKeyConfig.getPKRecordKey(nspkId);
+                if(!jedisUtils.exists(pkRecordKey)){
+                    final Map<String, String> strMap = jedisUtils.hmsetResetObj(nspkResult, pkRecordKey);
+                    log.info("---- init nspk to redis map={}", strMap);
+                }else {
+                    final Map<String, String> updateMap = jedisUtils.hmsetUpdateObj(nspk, pkRecordKey);
+                    log.info("---- update nspk to redis map={}", updateMap);
+                }
+            }
+            return nspkResult;
+        }
+    }
+
+    @Override
+    public NSPK getLoadNSPK(Long pkId, boolean isLoad) {
+        assert  pkId != null;
+        String skey = NSKeyConfig.getSkillKey(pkId);
+        final Boolean exists = jedisUtils.exists(skey);
+        if (!exists || isLoad){
+            log.info("load a nspk by pkId from db and store to redis pkId={}...", pkId);
+            NSPK nsPK = null;
+            try {
+                nsPK = entityManager.find(NSPK.class, pkId);
+                jedisUtils.hmsetResetObj(nsPK, skey);
+            }catch (Exception ignored){}
+            return nsPK;
+        }else {
+            log.info("load a nspk by pkId only from redis and pkId={}", pkId);
+            final Map<String, String> map = jedisUtils.action(jedis -> jedis.hgetAll(skey));
+            final NSPK skill = MapObjUtils.strMap2Obj(NSPK.class, map);
+            return skill;
+        }
+    }
+
+    //TODO:3—— 封装获取各个技能且包含实时状态的getSkillStatuses()方法
+    //TODO:4—— 封装PK开始后, 使用对应技能的useSkill()方法
 }
