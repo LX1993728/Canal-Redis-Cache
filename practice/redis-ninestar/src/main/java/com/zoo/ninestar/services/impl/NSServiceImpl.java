@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -78,11 +75,71 @@ public class NSServiceImpl implements NSService {
     }
 
     /**
+     *  get skills and statuses
+     * @return
+     */
+    @Override
+    public List<NSPKSkill> getSkillAndStatuses(Long pkId, Long masterId){
+        assert pkId != null && masterId != null;
+        final NSConfigVO globalConfig = getInitGlobalConfig();
+        assert globalConfig != null;
+        final List<NSPKSkill> loadSkills = getLoadSkills(false);
+        Map<Long, Integer> skillModMap = new HashMap<>();
+        for (NSPKSkill skill : loadSkills){
+            final Integer maxTimes = skill.getMaxTimes();
+            final Long refSkillId = skill.getRefSkillId();
+            final Integer refSkillCount = skill.getRefSkillCount();
+            final String skillTimesKey = NSKeyConfig.getSkillTimesKey(pkId, masterId, skill.getId());
+            final String skillIsActiveKey = NSKeyConfig.getSkillIsActiveKey(pkId, masterId, skill.getId());
+            final Long skillTimes = jedisUtils.action(jedis -> jedis.incrBy(skillTimesKey, 0L));
+            final Boolean existsIsActiveKey = jedisUtils.exists(skillIsActiveKey);
+            if (existsIsActiveKey){
+                final boolean b = Boolean.parseBoolean(jedisUtils.get(skillIsActiveKey));
+                // redis priority highest
+                skill.setIsActive(b);
+            }
+
+            if (refSkillId != null && refSkillCount != null && refSkillCount != -1){
+                final String refSkillTimesKey = NSKeyConfig.getSkillTimesKey(pkId, masterId, refSkillId);
+                final Long refSkillTimes = jedisUtils.action(jedis -> jedis.incrBy(refSkillTimesKey, 0L));
+                if (!existsIsActiveKey){
+                    skill.setIsActive(refSkillTimes > refSkillCount && (refSkillTimes - skillTimes * refSkillCount) % refSkillCount == 0);
+                    jedisUtils.set(skillIsActiveKey, String.valueOf(skill.getIsActive()));
+                }
+                skillModMap.put(refSkillId, refSkillTimes.intValue() % refSkillCount);
+            }
+
+            if (skill.getIsActive() == null){
+                skill.setIsActive(true);
+            }
+
+            if (maxTimes == null || maxTimes <= 0){
+                skill.setRemainTimes(-1); // -1 - NO times limit
+            }else {
+                int remainTimes = maxTimes -  Math.min(skillTimes.intValue(), maxTimes);
+                skill.setRemainTimes(remainTimes);
+                if (skill.getIsActive() && remainTimes <= 0){
+                    skill.setIsActive(false);
+                    jedisUtils.set(skillIsActiveKey, String.valueOf(false));
+                }
+            }
+        }
+
+        for (NSPKSkill skill2 : loadSkills){
+            final Long skill2Id = skill2.getId();
+            if (skillModMap.containsKey(skill2Id)){
+                skill2.setModTimes(skillModMap.get(skill2Id));
+            }
+        }
+        return loadSkills;
+    }
+
+    /**
      * get config
      * @return
      */
     @Override
-    public NSConfigVO getInitGlobalTotal(){
+    public NSConfigVO getInitGlobalConfig(){
         final String key = NSKeyConfig.getINIT_GLOBAL_CONFIG_KEY();
         final Boolean exists = jedisUtils.action(jedis -> jedis.exists(key));
         if (exists){
@@ -156,8 +213,7 @@ public class NSServiceImpl implements NSService {
         }else {
             log.info("load a nspk by pkId only from redis and pkId={}", pkId);
             final Map<String, String> map = jedisUtils.action(jedis -> jedis.hgetAll(skey));
-            final NSPK skill = MapObjUtils.strMap2Obj(NSPK.class, map);
-            return skill;
+            return MapObjUtils.strMap2Obj(NSPK.class, map);
         }
     }
 

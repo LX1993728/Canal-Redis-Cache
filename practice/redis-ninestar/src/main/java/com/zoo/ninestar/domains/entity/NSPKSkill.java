@@ -101,6 +101,9 @@ public class NSPKSkill {
     @Transient
     private Integer remainTimes;
 
+    @Transient
+    private Integer modTimes;
+
     // 表示是否为激活状态
     @Transient
     private Boolean isActive;

@@ -35,7 +35,6 @@ public class TestController {
         final NSPKSkill skill = nsService.getLoadSkill(skillId, isLoad);
         return skill;
     }
-
     @GetMapping("/testObjMap")
     public Object testObjMap(){
         final NSPK nspk = new NSPK();
@@ -46,6 +45,15 @@ public class TestController {
         final Map<String, Object> objectMap = MapObjUtils.obj2OBJMap(nspk);
         return objectMap;
     }
+
+
+    @GetMapping("/getSkillStatus")
+    public Object getSkillById(@RequestParam(name = "pkId", defaultValue = "1")Long pkId,
+                               @RequestParam(name = "masterId", defaultValue = "100") Long masterId){
+        final List<NSPKSkill> skillAndStatuses = nsService.getSkillAndStatuses(pkId, masterId);
+        return skillAndStatuses;
+    }
+
 
 
 }

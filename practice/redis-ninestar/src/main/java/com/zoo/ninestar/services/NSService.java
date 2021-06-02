@@ -26,7 +26,9 @@ public interface NSService {
      */
     NSPKSkill getLoadSkill(Long skillId, boolean isLoad);
 
-    NSConfigVO getInitGlobalTotal();
+    List<NSPKSkill> getSkillAndStatuses(Long pkId, Long masterId);
+
+    NSConfigVO getInitGlobalConfig();
 
     NSResultVO<NSPK> invitePK();
 
