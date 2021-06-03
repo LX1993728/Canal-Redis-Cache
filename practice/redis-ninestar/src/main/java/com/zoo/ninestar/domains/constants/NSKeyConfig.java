@@ -154,6 +154,19 @@ public class NSKeyConfig {
      * @param skillId
      * @return
      */
+    public static String getSkillModTimesKey(Long pkId, Long masterId, Long skillId){
+        assert skillId != null;
+        final String pre = getPKMasterPre(pkId, masterId);
+        return String.format("%s%s%s%s%s", pre, SPLIT_FLAG, "SKILLMODTIMES", SPLIT_FLAG, skillId);
+    }
+
+    /**
+     *
+     * @param pkId
+     * @param masterId
+     * @param skillId
+     * @return
+     */
     public static String getSkillIsActiveKey(Long pkId, Long masterId, Long skillId){
         assert skillId != null;
         final String pre = getPKMasterPre(pkId, masterId);
