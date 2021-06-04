@@ -6,6 +6,7 @@ import com.zoo.ninestar.domains.vo.NSResultVO;
 import com.zoo.ninestar.domains.vo.redis.NSConfigVO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 九星神器 相关的service操作
@@ -18,6 +19,9 @@ public interface NSService {
      */
     List<NSPKSkill> getLoadSkills(boolean isLoad);
 
+
+    Long getBeRefedSkillId(Long skillId, boolean isLoad);
+
     /**
      * 获取指定skillId的skill技能
      * @param skillId
@@ -27,6 +31,8 @@ public interface NSService {
     NSPKSkill getLoadSkill(Long skillId, boolean isLoad);
 
     List<NSPKSkill> getSkillAndStatuses(Long pkId, Long masterId);
+
+    Map<Long, NSPKSkill> getSkillAndStatusesMap(Long pkId, Long masterId);
 
     NSConfigVO getInitGlobalConfig();
 

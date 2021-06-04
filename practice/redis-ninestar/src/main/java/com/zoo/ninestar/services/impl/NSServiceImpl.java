@@ -53,6 +53,46 @@ public class NSServiceImpl implements NSService {
         }
     }
 
+    /**
+     * key : id of M skill which be the refSkillId field of other skill
+     * value: id of B skill
+     * @return
+     */
+    private Map<Long, Long> getBeRefSkillIdRelationMap(boolean isLoad){
+        final String beRefSkillKey = NSKeyConfig.getBeRefSkillKey();
+        Map<Long, Long> relationMap = new HashMap<>();
+        if (!jedisUtils.exists(beRefSkillKey) || isLoad){
+            final List<NSPKSkill> loadSkills = getLoadSkills(isLoad);
+            for (NSPKSkill skill : loadSkills){
+                if (skill.getRefSkillId() != null){
+                    relationMap.put(skill.getRefSkillId(), skill.getId());
+                }
+            }
+            jedisUtils.hmsetResetObj(relationMap, beRefSkillKey);
+        }else {
+            final Map<String, String> map = jedisUtils.action(jedis -> jedis.hgetAll(beRefSkillKey));
+            for (Map.Entry<String, String> entry : map.entrySet()){
+                relationMap.put(Long.parseLong(entry.getKey()), Long.parseLong(entry.getValue()));
+            }
+        }
+        return relationMap;
+    }
+
+    /**
+     *  get be refed skillId
+     * @param skillId
+     * @param isLoad
+     * @return
+     */
+    public Long getBeRefedSkillId(Long skillId, boolean isLoad){
+        final Map<Long, Long> rMap = getBeRefSkillIdRelationMap(isLoad);
+        if (rMap.containsKey(skillId)){
+            return rMap.get(skillId);
+        }
+
+        return null;
+    }
+
     @Override
     public NSPKSkill getLoadSkill(Long skillId, boolean isLoad) {
         assert  skillId != null;
@@ -145,6 +185,16 @@ public class NSServiceImpl implements NSService {
             }
         }
         return loadSkills;
+    }
+
+    @Override
+    public Map<Long, NSPKSkill> getSkillAndStatusesMap(Long pkId, Long masterId){
+        final List<NSPKSkill> skillAndStatuses = getSkillAndStatuses(pkId, masterId);
+        Map<Long, NSPKSkill> resultMap = new HashMap<>();
+        for (NSPKSkill skill : skillAndStatuses){
+            resultMap.put(skill.getId(), skill);
+        }
+        return resultMap;
     }
 
     /**
@@ -270,20 +320,80 @@ public class NSServiceImpl implements NSService {
     public NSResultVO<NSPKSkill> useSkill(Long pkId, Long targetMasterId, Long skillId, Integer count){
         //TODO:3—— 封装PK开始后, 使用对应技能的useSkill()方法
         assert pkId != null && targetMasterId != null && skillId != null;
-        count = count == null ? 1 : count;
+        count = count == null ? 1 : Math.abs(count);
         final NSResultVO<NSPKSkill> resultVO = new NSResultVO<>();
 
+        // check balance is enough
+        final NSPKSkill loadSkill = getLoadSkill(skillId, false);
         /**
-         * step1: 检查校验
-         *   1.1 校验参数是否合法，比如是否存在PKId对应的记录/PKId中是否存在对应的直播间主播/对应的技能是否存在/PK是否结束关闭
-         *   1.2 校验检查skillId对应技能的相关信息以及在当前直播间的状态(确定是否是有效的)
-         *      1.2.1 首先检查该技能是否有次数限制即maxTimes !=null && maxTimes> 0
-         *          1.2.1.1 如果没有次数限制则设置对应标志然后进行下一步检查。
-         *          1.2.1.2 如果满足条件且次数已用完，则直接返回失败信息。如果没有用完则则设置对应标志并进行下一步检查。
-         *      1.2.2 其次是检查该技能是否ref依赖于主技能，即refSKillId != null && refSkillCount != null。
-         *          1.2.2.1 如果不满足，则设置对应标志后进行进行下一步检查。
-         *          1.2.2.2 如果满足条件，首先获取
+         * TODO:// 余额检查
+         * if  用户的余额 < 该技能的元宝数 * count
+         *      return resultVO
          */
+
+        // check skill invalid
+        final Map<Long, NSPKSkill> statusesMap = getSkillAndStatusesMap(pkId, targetMasterId);
+        if (!statusesMap.containsKey(skillId)){
+            resultVO.setSuccess(false);
+            resultVO.setDescription("不存在此技能skill !!!");
+            return resultVO;
+        }
+
+
+        // (add a remote lock for  skill)
+        final NSPKSkill skill = statusesMap.get(skillId);
+        resultVO.setObj(skill);
+        if (!skill.getIsActive()){
+            resultVO.setSuccess(false);
+            resultVO.setDescription("不满足使用此技能的条件!!! ");
+            return resultVO;
+        }
+
+        final Long refSkillId = skill.getRefSkillId();
+        if (refSkillId != null){
+            count = Math.min(count, 1);
+        }
+
+        if (skill.getMaxTimes() != null && (count + skill.getRemainTimes()) > skill.getMaxTimes()){
+            count =  skill.getMaxTimes() - skill.getRemainTimes();
+        }
+
+        final String skillTimesKey = NSKeyConfig.getSkillTimesKey(pkId, targetMasterId, skillId);
+        Integer finalCount = count;
+        final Long newTimes = jedisUtils.action(jedis -> jedis.incrBy(skillTimesKey, finalCount));
+        // TODO: print log
+
+        // if have max times
+        if (skill.getMaxTimes() != null){
+            skill.setRemainTimes(skill.getMaxTimes() - newTimes.intValue());
+        }
+
+        // if is a B skill
+        if (refSkillId != null){
+            final String refSkillModTimesKey = NSKeyConfig.getSkillModTimesKey(pkId, targetMasterId, refSkillId);
+            jedisUtils.set(refSkillModTimesKey, String.valueOf(0));
+            final String skillIsActiveKey = NSKeyConfig.getSkillIsActiveKey(pkId, targetMasterId, skillId);
+            jedisUtils.set(skillIsActiveKey, String.valueOf(false));
+        }
+
+        // if is a M skill
+        final Long beRefedSkillId = getBeRefedSkillId(skillId, false);
+        if (beRefedSkillId != null){
+            final NSPKSkill beRefSkill = statusesMap.get(beRefedSkillId);
+            assert beRefSkill != null;
+            if (!beRefSkill.getIsActive()){
+                final String selfModTimesKey = NSKeyConfig.getSkillModTimesKey(pkId, targetMasterId, skillId);
+                final Long selfModTimes = jedisUtils.action(jedis -> jedis.incrBy(selfModTimesKey, 0));
+                long selfNewModTimes = Math.min(selfModTimes + finalCount, beRefSkill.getRefSkillCount());
+                jedisUtils.set(selfModTimesKey, String.valueOf(selfNewModTimes));
+                if (selfNewModTimes == beRefSkill.getRefSkillCount()){
+                    beRefSkill.setIsActive(true);
+                }
+            }
+        }
+
+        // TODO: 处理技能的各项功能参数
+
         return resultVO;
     }
 }

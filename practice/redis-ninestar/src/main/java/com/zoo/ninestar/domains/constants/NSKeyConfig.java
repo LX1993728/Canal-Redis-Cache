@@ -33,6 +33,14 @@ public class NSKeyConfig {
     }
 
     /**
+     *
+     * @return
+     */
+    public static String getBeRefSkillKey(){
+        return String.format("%s%s%s", SKILL_PRE, SPLIT_FLAG, "BEREFRELATION");
+    }
+
+    /**
      * 获取指定PK赛的统一前缀
      * @param pkId
      * @return
