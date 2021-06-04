@@ -381,14 +381,17 @@ public class NSServiceImpl implements NSService {
         if (beRefedSkillId != null){
             final NSPKSkill beRefSkill = statusesMap.get(beRefedSkillId);
             assert beRefSkill != null;
+            final String selfModTimesKey = NSKeyConfig.getSkillModTimesKey(pkId, targetMasterId, skillId);
+            final Long selfModTimes = jedisUtils.action(jedis -> jedis.incrBy(selfModTimesKey, 0));
             if (!beRefSkill.getIsActive()){
-                final String selfModTimesKey = NSKeyConfig.getSkillModTimesKey(pkId, targetMasterId, skillId);
-                final Long selfModTimes = jedisUtils.action(jedis -> jedis.incrBy(selfModTimesKey, 0));
                 long selfNewModTimes = Math.min(selfModTimes + finalCount, beRefSkill.getRefSkillCount());
                 jedisUtils.set(selfModTimesKey, String.valueOf(selfNewModTimes));
-                if (selfNewModTimes == beRefSkill.getRefSkillCount()){
+                if(selfNewModTimes == beRefSkill.getRefSkillCount()){
                     beRefSkill.setIsActive(true);
                 }
+                // TODO: send a notify  to room for the be activating event of a B skill
+            }else {
+                jedisUtils.set(selfModTimesKey, String.valueOf(0));
             }
         }
 
