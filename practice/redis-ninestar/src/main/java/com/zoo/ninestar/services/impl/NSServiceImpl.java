@@ -1,10 +1,12 @@
 package com.zoo.ninestar.services.impl;
 
 import com.zoo.ninestar.domains.constants.NSKeyConfig;
+import com.zoo.ninestar.domains.entity.Master;
 import com.zoo.ninestar.domains.entity.NSPK;
 import com.zoo.ninestar.domains.entity.NSPKSkill;
 import com.zoo.ninestar.domains.vo.NSResultVO;
 import com.zoo.ninestar.domains.vo.redis.NSConfigVO;
+import com.zoo.ninestar.domains.vo.redis.NSPKTotalVO;
 import com.zoo.ninestar.services.NSService;
 import com.zoo.ninestar.utils.JedisUtils;
 import com.zoo.ninestar.utils.MapObjUtils;
@@ -281,6 +283,23 @@ public class NSServiceImpl implements NSService {
     }
 
     @Override
+    public NSPKTotalVO getNSPKTotalVO(Long pkId){
+        assert pkId != null;
+        final String totalHashKey = NSKeyConfig.getMastersTotalHashKey(pkId);
+        final NSConfigVO globalConfig = getInitGlobalConfig();
+        final Integer total = globalConfig.getTotal();
+        if (!jedisUtils.exists(totalHashKey)){
+            final NSPKTotalVO totalVO = new NSPKTotalVO(total, total);
+            jedisUtils.hmsetResetObj(totalVO, totalHashKey);
+            return totalVO;
+        }else {
+            final Map<String, String> stringMap = jedisUtils.action(jedis -> jedis.hgetAll(totalHashKey));
+            final NSPKTotalVO nspkTotalVO = MapObjUtils.strMap2Obj(NSPKTotalVO.class, stringMap);
+            return nspkTotalVO;
+        }
+    }
+
+    @Override
     public NSResultVO<NSPK> invitePK(){
         //TODO:1 ——invitePK 5 step
         final NSResultVO<NSPK> nsResultVO = new NSResultVO<>();
@@ -316,8 +335,7 @@ public class NSServiceImpl implements NSService {
         return nsResultVO;
     }
 
-
-    public NSResultVO<NSPKSkill> useSkill(Long pkId, Long targetMasterId, Long skillId, Integer count){
+    public NSResultVO<NSPKSkill> useSkill(Master master, Long pkId, Long targetMasterId, Long skillId, Integer count){
         //TODO:3—— 封装PK开始后, 使用对应技能的useSkill()方法
         assert pkId != null && targetMasterId != null && skillId != null;
         count = count == null ? 1 : Math.abs(count);
@@ -326,7 +344,7 @@ public class NSServiceImpl implements NSService {
         // check balance is enough
         final NSPKSkill loadSkill = getLoadSkill(skillId, false);
         /**
-         * TODO:// 余额检查
+         * TODO:useSKill() 余额检查
          * if  用户的余额 < 该技能的元宝数 * count
          *      return resultVO
          */
@@ -361,7 +379,6 @@ public class NSServiceImpl implements NSService {
         final String skillTimesKey = NSKeyConfig.getSkillTimesKey(pkId, targetMasterId, skillId);
         Integer finalCount = count;
         final Long newTimes = jedisUtils.action(jedis -> jedis.incrBy(skillTimesKey, finalCount));
-        // TODO: print log
 
         // if have max times
         if (skill.getMaxTimes() != null){
@@ -395,8 +412,43 @@ public class NSServiceImpl implements NSService {
             }
         }
 
-        // TODO: 处理技能的各项功能参数
+        // TODO:useSkill() 处理技能的各项功能参数
+
+        // (end a remote lock for  skill)
+
+        // TODO:useSkill() 延时队列处理战报以及DPS排行
+
+        // TODO:useSkill() 延时队列处理余额扣款以及详情项的插入
 
         return resultVO;
     }
+
+    public NSResultVO<NSPKSkill> closePK(Master master, Long pkId, Integer status){
+        // TODO:closePK() 处理closePK的相关逻辑
+        // step1:  更新PK记录的status状态为指定的结束标志
+        // step2:  分别给双方直播间发送结束PK的通知
+        // step3: 清除此次PK 相关的所有Redis相关数据
+        return null;
+    }
+
+    /**
+     * 主播对应的直播间是否处于PK状态
+     * @param masterId 主播对应的ID
+     * @return
+     */
+    public NSResultVO<NSPK> isMasterPKing(Long masterId){
+        assert masterId != null;
+        final NSResultVO<NSPK> resultVO = new NSResultVO<>();
+        final List<NSPK> nsPks = entityManager.createQuery(
+                "select pk from NSPK pk where :masterId in (pk.masterId, pk.targetMasterId) and pk.status <= 1 order by pk.startTime  desc ",
+                NSPK.class).setParameter("masterId", masterId).getResultList();
+        if (!nsPks.isEmpty()){
+            resultVO.setObj(nsPks.get(0));
+            resultVO.setSuccess(true);
+        }else {
+            resultVO.setSuccess(false);
+        }
+        return resultVO;
+    }
+
 }

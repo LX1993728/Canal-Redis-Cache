@@ -1,5 +1,6 @@
 package com.zoo.ninestar.components;
 
+import com.zoo.ninestar.domains.entity.Master;
 import com.zoo.ninestar.domains.entity.NSPKSkill;
 import com.zoo.ninestar.services.NSService;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,20 @@ public class StartRunner implements ApplicationRunner {
      * 初始化数据源
      */
     private void initData(){
+        final Master master1 = new Master(null, "张三");
+        final Master master2 = new Master(null, "李四");
+        final Master master3 = new Master(null, "王五");
+        final Master master4 = new Master(null, "赵刘");
+        final Master master5 = new Master(null, "陈七");
+        final Master master6 = new Master(null, "宋八");
+        entityManager.persist(master1);
+        entityManager.persist(master2);
+        entityManager.persist(master3);
+        entityManager.persist(master4);
+        entityManager.persist(master5);
+        entityManager.persist(master6);
+
+
         final NSPKSkill skill1 = new NSPKSkill(null, "烈火燎原", "http://xxxx.jpg", 0, 50L, 50L, 50L, 50L, 50L, null, null, "KO挑战期间，会减少对手5000生命值",
                 5000, null, null, null, null, null, null, null,null, null, null, null);
         final NSPKSkill skill2 = new NSPKSkill(null, "蓄力烈火", "http://xxxx.jpg", 0, 5000L, 5000L, 5000L, 5000L, 5000L, null, null, "烈火燎原发动10次后可使用，给对手施加1层Debuff状态，持续时间15s，每秒减200点生命值，最多叠加5层！",

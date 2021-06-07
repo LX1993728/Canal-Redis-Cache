@@ -4,6 +4,7 @@ import com.zoo.ninestar.domains.entity.NSPK;
 import com.zoo.ninestar.domains.entity.NSPKSkill;
 import com.zoo.ninestar.domains.vo.NSResultVO;
 import com.zoo.ninestar.domains.vo.redis.NSConfigVO;
+import com.zoo.ninestar.domains.vo.redis.NSPKTotalVO;
 
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,12 @@ public interface NSService {
      */
     List<NSPKSkill> getLoadSkills(boolean isLoad);
 
+    /**
+     * get nine star pk total
+     * @param pkId
+     * @return
+     */
+    NSPKTotalVO getNSPKTotalVO(Long pkId);
 
     Long getBeRefedSkillId(Long skillId, boolean isLoad);
 
