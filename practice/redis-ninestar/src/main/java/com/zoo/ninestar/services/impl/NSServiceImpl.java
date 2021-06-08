@@ -335,19 +335,27 @@ public class NSServiceImpl implements NSService {
         return nsResultVO;
     }
 
+    /**
+     *
+     * @param master 当前登录粉丝用户
+     * @param pkId PK标识
+     * @param targetMasterId 当前前粉丝用户所在直播间对应主播的MasterId
+     * @param skillId 使用的技能ID
+     * @param count
+     * @return
+     */
     public NSResultVO<NSPKSkill> useSkill(Master master, Long pkId, Long targetMasterId, Long skillId, Integer count){
         //TODO:3—— 封装PK开始后, 使用对应技能的useSkill()方法
         assert pkId != null && targetMasterId != null && skillId != null;
         count = count == null ? 1 : Math.abs(count);
         final NSResultVO<NSPKSkill> resultVO = new NSResultVO<>();
 
-        // check balance is enough
-        final NSPKSkill loadSkill = getLoadSkill(skillId, false);
-        /**
-         * TODO:useSKill() 余额检查
-         * if  用户的余额 < 该技能的元宝数 * count
-         *      return resultVO
-         */
+        NSPK nspk = getLoadNSPK(pkId, false);
+        if (nspk == null || nspk.getStatus() != 1){
+            resultVO.setSuccess(false);
+            resultVO.setDescription("PK不存在或已结束或未开始进行...");
+            return resultVO;
+        }
 
         // check skill invalid
         final Map<Long, NSPKSkill> statusesMap = getSkillAndStatusesMap(pkId, targetMasterId);
@@ -366,6 +374,14 @@ public class NSServiceImpl implements NSService {
             resultVO.setDescription("不满足使用此技能的条件!!! ");
             return resultVO;
         }
+
+        /**
+         * TODO:useSKill() 余额检查 并进行余额扣除
+         * if  用户的余额 < 该技能的元宝数 * count
+         *      return resultVO
+         *  else
+         *      扣款流程
+         */
 
         final Long refSkillId = skill.getRefSkillId();
         if (refSkillId != null){
@@ -412,16 +428,29 @@ public class NSServiceImpl implements NSService {
             }
         }
 
-        // TODO:useSkill() 处理技能的各项功能参数
+        NSConfigVO configVO = getInitGlobalConfig();
+        assert configVO != null;
+        // 处理技能的各项功能参数
+        int maxTotal = configVO.getTotal();
+        int minTotal = 0;
+        boolean isSender = targetMasterId.equals(nspk.getMasterId());
+        if (skill.getHurting() != null && skill.getHurting() > 0){
+
+        }
+
+
+
 
         // (end a remote lock for  skill)
 
         // TODO:useSkill() 延时队列处理战报以及DPS排行
 
-        // TODO:useSkill() 延时队列处理余额扣款以及详情项的插入
+        // TODO:useSkill() 延时队列处理PK详情项的插入
 
         return resultVO;
     }
+
+
 
     public NSResultVO<NSPKSkill> closePK(Master master, Long pkId, Integer status){
         // TODO:closePK() 处理closePK的相关逻辑
