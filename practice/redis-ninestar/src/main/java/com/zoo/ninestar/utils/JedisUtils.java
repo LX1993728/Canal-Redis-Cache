@@ -223,7 +223,10 @@ public class JedisUtils {
         assert StringUtils.isNotBlank(key);
         final Map<String, String> strMap = MapObjUtils.obj2STRMap(obj);
         if (!strMap.isEmpty()){
-            action(jedis -> jedis.hmset(key, strMap));
+            action(jedis -> {
+                jedis.del(key);
+                return jedis.hmset(key, strMap);
+            });
         }
         return strMap;
     }

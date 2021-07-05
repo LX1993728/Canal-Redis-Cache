@@ -1,6 +1,7 @@
 package com.zoo.ninestar.components;
 
 import com.zoo.ninestar.domains.entity.Master;
+import com.zoo.ninestar.domains.entity.NSPK;
 import com.zoo.ninestar.domains.entity.NSPKSkill;
 import com.zoo.ninestar.services.NSService;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -77,5 +79,8 @@ public class StartRunner implements ApplicationRunner {
         entityManager.persist(skill6);
         entityManager.persist(skill7);
 
+        // 初始化一场PK赛记录
+        final NSPK nspk = new NSPK(null, 1000L, 1001L, new Date(), new Date(), 30000, null, 1, null, null);
+        entityManager.persist(nspk);
     }
 }

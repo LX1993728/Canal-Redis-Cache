@@ -265,15 +265,18 @@ public class NSServiceImpl implements NSService {
     @Override
     public NSPK getLoadNSPK(Long pkId, boolean isLoad) {
         assert  pkId != null;
-        String skey = NSKeyConfig.getSkillKey(pkId);
+        String skey = NSKeyConfig.getPKRecordKey(pkId);
         final Boolean exists = jedisUtils.exists(skey);
         if (!exists || isLoad){
             log.info("load a nspk by pkId from db and store to redis pkId={}...", pkId);
             NSPK nsPK = null;
             try {
                 nsPK = entityManager.find(NSPK.class, pkId);
-                jedisUtils.hmsetResetObj(nsPK, skey);
-            }catch (Exception ignored){}
+                Map<String, String> strMap = jedisUtils.hmsetResetObj(nsPK, skey);
+                log.info("++++strMap={} +++++", strMap);
+            }catch (Exception e){
+                log.error(e.getMessage(), e);
+            }
             return nsPK;
         }else {
             log.info("load a nspk by pkId only from redis and pkId={}", pkId);

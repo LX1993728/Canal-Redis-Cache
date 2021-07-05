@@ -54,6 +54,10 @@ public class TestController {
         return skillAndStatuses;
     }
 
+    @GetMapping("/getPKById")
+    public Object getPkId(@RequestParam(name = "pkId", defaultValue = "1")Long pkId){
+        return nsService.getLoadNSPK(pkId, false);
+    }
 
 
 }
