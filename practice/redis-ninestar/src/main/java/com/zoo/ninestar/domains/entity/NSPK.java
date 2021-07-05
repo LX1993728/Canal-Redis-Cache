@@ -47,7 +47,7 @@ public class NSPK {
     @Column(name = "winner_master_id")
     private Long winnerMasterId;
 
-    //  status: PK赛的状态(0- 发起PK邀请,等待接受中 1- 接受PK邀请进行PK中 2- 拒绝PK结束PK 3- PK正常/超时结束)
+    //  status: PK赛的状态(0- 发起PK邀请,等待接受中 1- 接受PK邀请进行PK中 2- 拒绝PK结束PK 3- PK正常结束(一方血量为0) 4-超时结束)
     private Integer status;
 
     @Transient

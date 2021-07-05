@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -51,7 +50,6 @@ public class NSPKDetail {
     private Integer plussing;
 
     //    release_time: 技能释放时间
-    @CreatedDate
     @Column(name = "release_time")
     private Date releaseTime;
 

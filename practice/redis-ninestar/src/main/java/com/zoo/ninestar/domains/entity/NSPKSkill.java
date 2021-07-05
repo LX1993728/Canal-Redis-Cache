@@ -6,10 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.Date;
 
 /**
- * 九星神器 PK记录对应的详情表
+ * 九星神器 PK技能表
  */
 @Data
 @ToString
@@ -101,6 +100,7 @@ public class NSPKSkill {
     @Transient
     private Integer remainTimes;
 
+    // 有效累计次数
     @Transient
     private Integer modTimes;
 
