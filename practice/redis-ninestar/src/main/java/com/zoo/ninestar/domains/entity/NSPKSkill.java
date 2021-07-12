@@ -100,6 +100,10 @@ public class NSPKSkill {
     @Column(name = "allow_batter")
     private Integer allowBatter;
 
+    // svga: 特效连接
+    @Column(name = "svga")
+    private String svga;
+
     // 剩余可执行次数 为null或-1表示没有次数限制
     @Transient
     private Integer remainTimes;
