@@ -25,31 +25,9 @@ public class NSPKSkill {
     //  name: 技能名称
     private String name = "未知技能";
 
-    //  icon：技能对应的图片地址
-    private String icon;
-
     //  for_master: 是否是主播端技能(1-是主播侧技能 0-用户侧技能)
     @Column(name = "for_master")
     private Integer forMaster = 0;
-
-    //  ingots: 使用改技能需要扣除的元宝值
-    private Long ingots;
-
-    //  point_num: 增加心意币数量`送礼的粉丝用户`
-    @Column(name = "point_num")
-    private Long pointNum;
-
-    //  feel_num: 增加的好感值`送礼的粉丝用户`
-    @Column(name = "feel_num")
-    private Long feelNum;
-
-    //  wealth_num: 增加的财富值`送礼的粉丝用户`
-    @Column(name = "wealth_num")
-    private Long wealthNum;
-
-    //  master_score: 增加的主播经验值`当前的主播`
-    @Column(name = "master_score")
-    private Long masterScore;
 
     //  delay_minute: 在PK开始后至少多长时间(分钟)后才可释放此技能
     @Column(name = "delay_minute")
@@ -96,13 +74,9 @@ public class NSPKSkill {
     @Column(name = "ref_skill_count")
     private Integer refSkillCount;
 
-    // allow_batter: 表示是否允许连击 1 表示允许连击 0或null表示不允许连击
-    @Column(name = "allow_batter")
-    private Integer allowBatter;
-
-    // svga: 特效连接
-    @Column(name = "svga")
-    private String svga;
+    // 关联的礼物ID
+    @Column(name = "gift_id")
+    private Long giftId;
 
     // 剩余可执行次数 为null或-1表示没有次数限制
     @Transient
