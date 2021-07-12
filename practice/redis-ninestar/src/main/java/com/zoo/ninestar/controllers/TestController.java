@@ -1,7 +1,11 @@
 package com.zoo.ninestar.controllers;
 
+import com.alibaba.fastjson.JSONObject;
 import com.zoo.ninestar.domains.entity.NSPK;
 import com.zoo.ninestar.domains.entity.NSPKSkill;
+import com.zoo.ninestar.domains.vo.notify.EnumATest;
+import com.zoo.ninestar.domains.vo.notify.NSNotifyType;
+import com.zoo.ninestar.domains.vo.notify.NSNotifyVO;
 import com.zoo.ninestar.services.NSService;
 import com.zoo.ninestar.utils.MapObjUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +61,14 @@ public class TestController {
     @GetMapping("/getPKById")
     public Object getPkId(@RequestParam(name = "pkId", defaultValue = "1")Long pkId){
         return nsService.getLoadNSPK(pkId, false);
+    }
+
+    @GetMapping("/testEnum")
+    public Object testEnum(){
+        final JSONObject jsonObject = new JSONObject();
+        jsonObject.put("enumATest", EnumATest.YELLOW);
+        final NSNotifyVO<JSONObject> nsNotifyVO = new NSNotifyVO<>(220, NSNotifyType.BATTLE_REPORT, "战报通知",jsonObject);
+        return nsNotifyVO;
     }
 
 

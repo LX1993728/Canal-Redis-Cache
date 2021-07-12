@@ -96,6 +96,10 @@ public class NSPKSkill {
     @Column(name = "ref_skill_count")
     private Integer refSkillCount;
 
+    // allow_batter: 表示是否允许连击 1 表示允许连击 0或null表示不允许连击
+    @Column(name = "allow_batter")
+    private Integer allowBatter;
+
     // 剩余可执行次数 为null或-1表示没有次数限制
     @Transient
     private Integer remainTimes;
