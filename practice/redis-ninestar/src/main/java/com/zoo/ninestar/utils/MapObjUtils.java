@@ -65,7 +65,11 @@ public class MapObjUtils{
                     final Class<?> fieldType = field.getType();
                     field.set(instance, transformValue(fieldType, value));
                 }catch (Exception e){
-                    log.error(e.getMessage(), e);
+                    if (e instanceof NoSuchFieldException){
+                        log.warn("class {} not contains field {}", clazz.getSimpleName(), key);
+                    }else {
+                        log.error(e.getMessage(), e);
+                    }
                 }
             }
             return instance;

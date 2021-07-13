@@ -1,6 +1,7 @@
 package com.zoo.ninestar.services.impl;
 
 import com.zoo.ninestar.domains.constants.NSKeyConfig;
+import com.zoo.ninestar.domains.entity.Gift;
 import com.zoo.ninestar.domains.entity.Master;
 import com.zoo.ninestar.domains.entity.NSPK;
 import com.zoo.ninestar.domains.entity.NSPKSkill;
@@ -114,6 +115,89 @@ public class NSServiceImpl implements NSService {
             final NSPKSkill skill = MapObjUtils.strMap2Obj(NSPKSkill.class, map);
             return skill;
         }
+    }
+
+    /**
+     * 获取技能礼物 通过skillId
+     * @param skillId
+     * @param isLoad
+     * @return
+     */
+    public Gift getLoadSkillGiftBySkillId(Long skillId,boolean includeSkill, boolean isLoad) {
+        assert  skillId != null;
+        final NSPKSkill skill = getLoadSkill(skillId, isLoad);
+        if (skill == null){
+            log.error("the skillId={} of skill not exists!!!", skillId);
+            return null;
+        }
+        if (skill.getGiftId() == null){
+            log.error("the skillId={} of skill not contains giftId !!!", skillId);
+            return null;
+        }
+
+        Gift gift = getLoadSkillGiftByGiftId(skill.getGiftId(), includeSkill, isLoad);
+        if (gift == null){
+            log.error("not exists the skillGift by skillId={}", skillId);
+        }
+        return gift;
+    }
+
+    /**
+     * 获取技能礼物 通过giftId
+     * @param giftId
+     * @param includeSkill 是否包含技能内容
+     * @param isLoad
+     * @return
+     */
+    public Gift getLoadSkillGiftByGiftId(Long giftId, boolean includeSkill, boolean isLoad){
+        String giftKey = NSKeyConfig.getSkillGiftKey(giftId);
+
+        final Boolean exists = jedisUtils.exists(giftKey);
+        Gift gift = null;
+        if (!exists || isLoad){
+            log.info("load a skill gift by giftId from db and store to redis giftId={}...", giftId);
+            try {
+                gift = entityManager.find(Gift.class, giftId);
+                jedisUtils.hmsetResetObj(gift, giftKey);
+            }catch (Exception ignored){}
+        }else {
+            log.info("load a skill gift by giftId only from redis and giftId={}", giftId);
+            final Map<String, String> map = jedisUtils.action(jedis -> jedis.hgetAll(giftKey));
+            gift = MapObjUtils.strMap2Obj(Gift.class, map);
+        }
+        if (gift != null){
+            if (includeSkill){
+                final NSPKSkill loadSkill = getLoadSkill(gift.getSkillId(), isLoad);
+                gift.setSkill(loadSkill);
+            }
+        }else {
+            log.error("not exists the skillGift by giftId={}", giftId);
+        }
+        return gift;
+    }
+
+    public List<Gift> getSkillGiftStatuses(Long pkId, Long masterId){
+        assert pkId != null && masterId != null;
+        final List<NSPKSkill> statuses = getSkillAndStatuses(pkId, masterId);
+        List<Gift> sGifts = new ArrayList<>();
+        for (NSPKSkill skill : statuses){
+            if (skill.getForMaster() == null || skill.getForMaster() == 0){
+                if (skill.getGiftId() == null){
+                    log.error("the giftId field of skill which the skillId={} can't be null ", skill.getId());
+                    continue;
+                }
+                final Gift gift = getLoadSkillGiftBySkillId(skill.getId(), false, false);
+                gift.setSkill(skill);
+                sGifts.add(gift);
+            }
+        }
+        sGifts.sort(new Comparator<Gift>() {
+            @Override
+            public int compare(Gift o1, Gift o2) {
+                return o1.getSort().compareTo(o2.getSort());
+            }
+        });
+        return sGifts;
     }
 
     /**

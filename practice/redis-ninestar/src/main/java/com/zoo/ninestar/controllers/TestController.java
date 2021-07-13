@@ -1,6 +1,7 @@
 package com.zoo.ninestar.controllers;
 
 import com.alibaba.fastjson.JSONObject;
+import com.zoo.ninestar.domains.entity.Gift;
 import com.zoo.ninestar.domains.entity.NSPK;
 import com.zoo.ninestar.domains.entity.NSPKSkill;
 import com.zoo.ninestar.domains.vo.notify.EnumATest;
@@ -71,5 +72,21 @@ public class TestController {
         return nsNotifyVO;
     }
 
+
+    @GetMapping("/getSkillGiftBySkillId")
+    public Object getSkillGiftBySkillId(@RequestParam(name = "skillId", defaultValue = "1")Long skillId,
+                                @RequestParam(name = "isLoad", defaultValue = "false")Boolean isLoad
+                                ){
+        final Gift gift = nsService.getLoadSkillGiftBySkillId(skillId, true, isLoad);
+        return gift;
+    }
+
+    @GetMapping("/getSkillGiftByGiftId")
+    public Object getSkillGiftByGiftId(@RequestParam(name = "giftId", defaultValue = "1")Long giftId,
+                                @RequestParam(name = "isLoad", defaultValue = "false")Boolean isLoad
+                                ){
+        final Gift gift = nsService.getLoadSkillGiftByGiftId(giftId, true, isLoad);
+        return gift;
+    }
 
 }

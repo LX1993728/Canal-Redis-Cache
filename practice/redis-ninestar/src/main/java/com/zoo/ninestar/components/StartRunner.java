@@ -1,5 +1,6 @@
 package com.zoo.ninestar.components;
 
+import com.zoo.ninestar.domains.entity.Gift;
 import com.zoo.ninestar.domains.entity.Master;
 import com.zoo.ninestar.domains.entity.NSPK;
 import com.zoo.ninestar.domains.entity.NSPKSkill;
@@ -79,12 +80,25 @@ public class StartRunner implements ApplicationRunner {
         entityManager.persist(skill6);
         entityManager.persist(skill7);
         skill1.setId(1L);
+        skill1.setGiftId(1001L);
+
         skill2.setId(2L);
+        skill2.setGiftId(1002L);
+
         skill3.setId(3L);
+        skill3.setGiftId(1003L);
+
         skill4.setId(4L);
+        skill4.setGiftId(1004L);
+
         skill5.setId(5L);
+        skill5.setGiftId(1005L);
+
         skill6.setId(6L);
+        skill6.setGiftId(1006L);
+
         skill7.setId(7L);
+        skill7.setGiftId(null);
 
         entityManager.persist(skill1);
         entityManager.persist(skill2);
@@ -93,6 +107,38 @@ public class StartRunner implements ApplicationRunner {
         entityManager.persist(skill5);
         entityManager.persist(skill6);
         entityManager.persist(skill7);
+
+        for (int i = 1; i<= 6 ; i++){
+            final Gift gift = new Gift();
+            gift.setIdentity(System.currentTimeMillis() + "");
+            gift.setGiftId(1000L + i);
+            gift.setSkillId((long) i);
+            String giftName = "";
+            switch (i){
+                case 1:
+                    giftName = "烈火燎原";
+                    break;
+                case 2:
+                    giftName = "蓄力烈火";
+                    break;
+                case 3:
+                    giftName = "净化";
+                    break;
+                case 4:
+                    giftName = "晴天一击";
+                    break;
+                case 5:
+                    giftName = "蓄力一击";
+                    break;
+                case 6:
+                    giftName = "救赎";
+                    break;
+            }
+            gift.setSort(1000 + i);
+            gift.setPrice(5000);
+            gift.setGiftName(giftName);
+            entityManager.persist(gift);
+        }
 
         // 初始化一场PK赛记录
         final NSPK nspk = new NSPK(null, 1000L, 1001L, new Date(), new Date(), 30000, null, 1, null, null);

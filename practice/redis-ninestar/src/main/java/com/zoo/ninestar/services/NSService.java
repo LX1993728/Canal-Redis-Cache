@@ -1,5 +1,6 @@
 package com.zoo.ninestar.services;
 
+import com.zoo.ninestar.domains.entity.Gift;
 import com.zoo.ninestar.domains.entity.NSPK;
 import com.zoo.ninestar.domains.entity.NSPKSkill;
 import com.zoo.ninestar.domains.vo.NSResultVO;
@@ -36,6 +37,12 @@ public interface NSService {
      * @return
      */
     NSPKSkill getLoadSkill(Long skillId, boolean isLoad);
+
+    Gift getLoadSkillGiftBySkillId(Long skillId, boolean includeSkill, boolean isLoad);
+
+    Gift getLoadSkillGiftByGiftId(Long giftId, boolean includeSkill, boolean isLoad);
+
+    List<Gift> getSkillGiftStatuses(Long pkId, Long masterId);
 
     List<NSPKSkill> getSkillAndStatuses(Long pkId, Long masterId);
 

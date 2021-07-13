@@ -17,6 +17,9 @@ public class NSKeyConfig {
     private static final String SKILL_PRE = NS_PRE + SPLIT_FLAG + "SKILL";
 
     @Getter
+    private static final String SKILL_GIFT_PRE = NS_PRE + SPLIT_FLAG + "SKILLGIFT";
+
+    @Getter
     private static final String INIT_GLOBAL_CONFIG_KEY = NS_PRE + SPLIT_FLAG + "GLOBALCONFIG";
 
     private static final String PK_PRE = NS_PRE + SPLIT_FLAG + "PK";
@@ -30,6 +33,16 @@ public class NSKeyConfig {
     public static String getSkillKey(Long skillId){
         assert skillId != null;
         return String.format("%s%s%s", SKILL_PRE, SPLIT_FLAG, skillId);
+    }
+
+    /**
+     * 获取技能礼物的key
+     * @param giftId
+     * @return
+     */
+    public static String getSkillGiftKey(Long giftId){
+        assert giftId != null;
+        return String.format("%s%s%s", SKILL_GIFT_PRE, SPLIT_FLAG, giftId);
     }
 
     /**

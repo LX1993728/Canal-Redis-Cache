@@ -152,6 +152,18 @@ public class Gift extends Item implements java.io.Serializable {
 		this.skillId = skillId;
 	}
 
+
+	private NSPKSkill skill;
+
+	@Transient
+	public NSPKSkill getSkill() {
+		return skill;
+	}
+
+	public void setSkill(NSPKSkill skill) {
+		this.skill = skill;
+	}
+
 	@Column(name="Fminwealthlevel")
 	public Integer getMinWealthLevel() {
 		return minWealthLevel;
@@ -283,7 +295,7 @@ public class Gift extends Item implements java.io.Serializable {
 
 	// Property accessors
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	// @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "Fgiftid")
 	public Long getGiftId() {
 		return this.giftId;
