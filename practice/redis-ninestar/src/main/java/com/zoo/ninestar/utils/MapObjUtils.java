@@ -175,4 +175,48 @@ public class MapObjUtils{
         log.info("更新表 hql={}", hqlStr);
         return hqlStr;
     }
+
+    /**
+     * 转换model
+     * */
+    public static <T>  T ConvertModel(Class<T> clazz, Object obj)
+    {
+        Field[] fields=obj.getClass().getDeclaredFields();
+        for (Field field:fields)
+        {
+            field.setAccessible(true);
+            Object val= null;
+            try {
+                val = field.get(obj);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+            if(val==null)
+            {
+                try {
+                    if(field.getType().getName().equals("java.lang.String")) {
+                        field.set(obj, "");
+                    }
+                    if(field.getType().getName().equals("java.lang.Integer")) {
+                        field.set(obj, -1);
+                    }
+                    if(field.getType().getName().equals("java.lang.Long")) {
+                        field.set(obj, -1L);
+                    }
+                    if(field.getType().getName().equals("java.lang.Double")) {
+                        field.set(obj, -1D);
+                    }
+                    if(field.getType().getName().equals("java.lang.Float")) {
+                        field.set(obj, -1F);
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+        return (T) obj;
+    }
+
 }
