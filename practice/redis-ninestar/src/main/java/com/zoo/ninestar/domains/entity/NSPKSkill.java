@@ -74,9 +74,13 @@ public class NSPKSkill {
     @Column(name = "ref_skill_count")
     private Integer refSkillCount;
 
-    // 关联的礼物ID
-    @Column(name = "gift_id")
-    private Long giftId;
+    // 关联的礼物ID 星钻礼物
+    @Column(name = "s_gift_id")
+    private Long sGiftId;
+
+    // 关联的礼物ID 元宝礼物
+    @Column(name = "g_gift_id")
+    private Long gGiftId;
 
     // 剩余可执行次数 为null或-1表示没有次数限制
     @Transient

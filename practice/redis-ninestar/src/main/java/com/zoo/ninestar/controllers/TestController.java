@@ -77,8 +77,8 @@ public class TestController {
     public Object getSkillGiftBySkillId(@RequestParam(name = "skillId", defaultValue = "1")Long skillId,
                                 @RequestParam(name = "isLoad", defaultValue = "false")Boolean isLoad
                                 ){
-        final Gift gift = nsService.getLoadSkillGiftBySkillId(skillId, true, isLoad);
-        return gift;
+        final List<Gift> gifts = nsService.getLoadSkillGiftBySkillId(skillId, true, isLoad);
+        return gifts;
     }
 
     @GetMapping("/getSkillGiftByGiftId")

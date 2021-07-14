@@ -123,23 +123,31 @@ public class NSServiceImpl implements NSService {
      * @param isLoad
      * @return
      */
-    public Gift getLoadSkillGiftBySkillId(Long skillId,boolean includeSkill, boolean isLoad) {
+    public List<Gift> getLoadSkillGiftBySkillId(Long skillId,boolean includeSkill, boolean isLoad) {
         assert  skillId != null;
         final NSPKSkill skill = getLoadSkill(skillId, isLoad);
+        List<Gift> gifts = new ArrayList<>();
         if (skill == null){
             log.error("the skillId={} of skill not exists!!!", skillId);
-            return null;
+            return gifts;
         }
-        if (skill.getGiftId() == null){
+        if (skill.getSGiftId() == null && skill.getGGiftId() == null){
             log.error("the skillId={} of skill not contains giftId !!!", skillId);
-            return null;
+            return gifts;
         }
-
-        Gift gift = getLoadSkillGiftByGiftId(skill.getGiftId(), includeSkill, isLoad);
-        if (gift == null){
-            log.error("not exists the skillGift by skillId={}", skillId);
+        if (skill.getSGiftId() != null && skill.getSGiftId() > 0){
+            Gift gift = getLoadSkillGiftByGiftId(skill.getSGiftId(), includeSkill, isLoad);
+            if (gift != null){
+                gifts.add(gift);
+            }
         }
-        return gift;
+        if (skill.getGGiftId() != null && skill.getGGiftId() > 0){
+            Gift gift = getLoadSkillGiftByGiftId(skill.getSGiftId(), includeSkill, isLoad);
+            if (gift != null){
+                gifts.add(gift);
+            }
+        }
+        return gifts;
     }
 
     /**
@@ -176,19 +184,23 @@ public class NSServiceImpl implements NSService {
         return gift;
     }
 
-    public List<Gift> getSkillGiftStatuses(Long pkId, Long masterId){
+    public Map<String, List<Gift>> getSkillGiftStatuses(Long pkId, Long masterId){
         assert pkId != null && masterId != null;
         final List<NSPKSkill> statuses = getSkillAndStatuses(pkId, masterId);
         List<Gift> sGifts = new ArrayList<>();
+        List<Gift> gGifts = new ArrayList<>();
         for (NSPKSkill skill : statuses){
             if (skill.getForMaster() == null || skill.getForMaster() == 0){
-                if (skill.getGiftId() == null){
-                    log.error("the giftId field of skill which the skillId={} can't be null ", skill.getId());
-                    continue;
+                if (skill.getSGiftId() != null || skill.getSGiftId() > 0){
+                    final Gift gift = getLoadSkillGiftByGiftId(skill.getSGiftId(), false, false);
+                    gift.setSkill(skill);
+                    sGifts.add(gift);
                 }
-                final Gift gift = getLoadSkillGiftBySkillId(skill.getId(), false, false);
-                gift.setSkill(skill);
-                sGifts.add(gift);
+                if (skill.getGGiftId() != null || skill.getGGiftId() > 0){
+                    final Gift gift = getLoadSkillGiftByGiftId(skill.getGGiftId(), false, false);
+                    gift.setSkill(skill);
+                    sGifts.add(gift);
+                }
             }
         }
         sGifts.sort(new Comparator<Gift>() {
@@ -197,7 +209,16 @@ public class NSServiceImpl implements NSService {
                 return o1.getSort().compareTo(o2.getSort());
             }
         });
-        return sGifts;
+        gGifts.sort(new Comparator<Gift>() {
+            @Override
+            public int compare(Gift o1, Gift o2) {
+                return o1.getSort().compareTo(o2.getSort());
+            }
+        });
+        Map<String, List<Gift>> map = new HashMap<>();
+        map.put("sGifts", sGifts);
+        map.put("gGifts", gGifts);
+        return map;
     }
 
     /**

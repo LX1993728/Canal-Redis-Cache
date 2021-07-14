@@ -15,6 +15,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -57,48 +58,20 @@ public class StartRunner implements ApplicationRunner {
 
 
         final NSPKSkill skill1 = new NSPKSkill(null, "烈火燎原",  0, null, null, "KO挑战期间，会减少对手5000生命值",
-                5000, null, null, null, null, null, null, null,null, null,null, null, null);
+                5000, null, null, null, null, null, null, null,null, null,null, null, null, null);
         final NSPKSkill skill2 = new NSPKSkill(null, "蓄力烈火",  0,  null, null, "烈火燎原发动10次后可使用，给对手施加1层Debuff状态，持续时间15s，每秒减200点生命值，最多叠加5层！",
-                null, null, 15, 5, 100, 10, null,1L, 10, null,null, null, null);
+                null, null, 15, 5, 100, 10, null,1L, 10, null,null, null, null, null);
         final NSPKSkill skill3 = new NSPKSkill(null, "净化",  0,  null, 10, "KO挑战期间，清除己方Debuff",
-                null, null, null, null, null, null, 1, null,null,null,null, null, null);
+                null, null, null, null, null, null, 1, null,null,null,null, null, null, null);
         final NSPKSkill skill4 = new NSPKSkill(null, "晴天一击",  0, null, null, "KO挑战期间，会减少对手5000生命值",
-                5000, null, null, null, null, null, null, null,null,null,null, null, null);
+                5000, null, null, null, null, null, null, null,null,null,null, null, null, null);
         final NSPKSkill skill5 = new NSPKSkill(null, "蓄力一击",  0,  null, null, "晴天一击发动10次后可使用，会减少对手50000生命值",
-                50000, null, null, null, null, null, null, 4L,10, null,null, null, null);
+                50000, null, null, null, null, null, null, 4L,10, null,null, null, null, null);
         final NSPKSkill skill6 = new NSPKSkill(null, "救赎",  0,  null, 10, "KO挑战期间，恢复己方1000生命值",
-                null, 1000, null, null, null, null, null, null,null,null,null, null, null);
+                null, 1000, null, null, null, null, null, null,null,null,null, null, null, null);
 
         final NSPKSkill skill7 = new NSPKSkill(null, "起死回生",  1, 3, 1, "立刻恢复一定百分百最大生命值",
-                null, 1000, null, null, null, null, null, null,null,null,null, null, null);
-
-        entityManager.persist(skill1);
-        entityManager.persist(skill2);
-        entityManager.persist(skill3);
-        entityManager.persist(skill4);
-        entityManager.persist(skill5);
-        entityManager.persist(skill6);
-        entityManager.persist(skill7);
-        skill1.setId(1L);
-        skill1.setGiftId(1001L);
-
-        skill2.setId(2L);
-        skill2.setGiftId(1002L);
-
-        skill3.setId(3L);
-        skill3.setGiftId(1003L);
-
-        skill4.setId(4L);
-        skill4.setGiftId(1004L);
-
-        skill5.setId(5L);
-        skill5.setGiftId(1005L);
-
-        skill6.setId(6L);
-        skill6.setGiftId(1006L);
-
-        skill7.setId(7L);
-        skill7.setGiftId(null);
+                null, 1000, null, null, null, null, null, null,null,null,null,null, null, null);
 
         entityManager.persist(skill1);
         entityManager.persist(skill2);
@@ -108,7 +81,18 @@ public class StartRunner implements ApplicationRunner {
         entityManager.persist(skill6);
         entityManager.persist(skill7);
 
-        for (int i = 1; i<= 6 ; i++){
+        NSPKSkill[] skills = new NSPKSkill[]{skill1, skill2, skill3, skill4, skill5, skill6, skill7};
+        for (int i = 1; i <= skills.length; i++){
+            NSPKSkill s = skills[i-1];
+            s.setId((long)i);
+            if (s.getForMaster() == null || s.getForMaster() <= 0){
+                s.setSGiftId(1000L+ (i*2 -1));
+                s.setGGiftId(1000L+ (i*2));
+            }
+            entityManager.persist(s);
+        }
+
+        for (int i = 1; i<= 12 ; i++){
             final Gift gift = new Gift();
             gift.setIdentity(System.currentTimeMillis() + "");
             gift.setGiftId(1000L + i);
@@ -116,21 +100,27 @@ public class StartRunner implements ApplicationRunner {
             String giftName = "";
             switch (i){
                 case 1:
+                case 2:
                     giftName = "烈火燎原";
                     break;
-                case 2:
+                case 3:
+                case 4:
                     giftName = "蓄力烈火";
                     break;
-                case 3:
+                case 5:
+                case 6:
                     giftName = "净化";
                     break;
-                case 4:
+                case 7:
+                case 8:
                     giftName = "晴天一击";
                     break;
-                case 5:
+                case 9:
+                case 10:
                     giftName = "蓄力一击";
                     break;
-                case 6:
+                case 11:
+                case 12:
                     giftName = "救赎";
                     break;
             }

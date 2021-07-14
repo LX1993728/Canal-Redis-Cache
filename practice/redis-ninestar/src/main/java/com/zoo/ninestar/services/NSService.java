@@ -38,11 +38,11 @@ public interface NSService {
      */
     NSPKSkill getLoadSkill(Long skillId, boolean isLoad);
 
-    Gift getLoadSkillGiftBySkillId(Long skillId, boolean includeSkill, boolean isLoad);
+    List<Gift> getLoadSkillGiftBySkillId(Long skillId, boolean includeSkill, boolean isLoad);
 
     Gift getLoadSkillGiftByGiftId(Long giftId, boolean includeSkill, boolean isLoad);
 
-    List<Gift> getSkillGiftStatuses(Long pkId, Long masterId);
+    Map<String, List<Gift>> getSkillGiftStatuses(Long pkId, Long masterId);
 
     List<NSPKSkill> getSkillAndStatuses(Long pkId, Long masterId);
 
