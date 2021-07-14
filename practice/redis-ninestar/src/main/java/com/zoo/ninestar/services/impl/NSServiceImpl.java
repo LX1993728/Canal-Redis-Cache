@@ -142,7 +142,7 @@ public class NSServiceImpl implements NSService {
             }
         }
         if (skill.getGGiftId() != null && skill.getGGiftId() > 0){
-            Gift gift = getLoadSkillGiftByGiftId(skill.getSGiftId(), includeSkill, isLoad);
+            Gift gift = getLoadSkillGiftByGiftId(skill.getGGiftId(), includeSkill, isLoad);
             if (gift != null){
                 gifts.add(gift);
             }
